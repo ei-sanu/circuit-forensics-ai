@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+.pytest_cache
+.coverage
+htmlcov
+dist
+node_modules
+tests
+src
+*.log

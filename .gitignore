@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+server/node_modules/
+**/node_modules/
+services/ml-engine/.venv/
+.venv/
+**/.venv/
+
+# Build outputs & caches
+.next/
+**/.next/
+dist/
+server/dist/
+**/dist/
+build/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+.pytest_cache/
+**/.pytest_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# Environment variables & configuration secrets
+.env*
+*.env*
+**/.env*
+*.env
+*.env.*
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

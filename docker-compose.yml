@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: circuit-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=circuit
+      - POSTGRES_PASSWORD=circuit_pass_2026
+      - POSTGRES_DB=circuit_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - circuit-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U circuit -d circuit_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: circuit-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./server/.env
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://circuit:circuit_pass_2026@postgres:5432/circuit_db}
+      - JWT_SECRET=${JWT_SECRET:-jwt-secret-circuit-auth-key-2026}
+      - BIOMETRIC_ENCRYPTION_KEY=${BIOMETRIC_ENCRYPTION_KEY:-circuit-biometric-secret-encryption-key-2026-secure}
+      - BIOMETRIC_ENABLED=${BIOMETRIC_ENABLED:-true}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:8080,http://localhost:3000,http://localhost:80,*}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - circuit-net
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  circuit-net:
+    driver: bridge
