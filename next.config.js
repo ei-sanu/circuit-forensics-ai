@@ -6,7 +6,7 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'cytoscape'],
   },
   async rewrites() {
-    const backendUrl = process.env.API_URL || 'http://localhost:3000';
+    const backendUrl = process.env.API_URL || 'http://127.0.0.1:3000';
     return [
       {
         source: '/api/:path*',

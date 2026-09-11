@@ -3,7 +3,7 @@
  * Concurrently starts Frontend, Server, and ML Engine in a single terminal
  * Works identically on Windows, macOS, and Linux
  */
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const path = require('path');
 
 const isWin = process.platform === 'win32';
@@ -21,19 +21,33 @@ const colors = {
 
 console.log(`\n${colors.bold}🌐 Starting all CIRCUIT services concurrently (OS: ${process.platform})...${colors.reset}\n`);
 
+// Clean stale ports before starting services
+try {
+  execSync(`node "${path.join(__dirname, 'clean-ports.js')}"`, { stdio: 'inherit' });
+} catch {
+  // Ignore
+}
+
 const services = [
   {
-    name: 'FRONTEND',
+    name: 'FRONTEND ',
     color: colors.frontend,
     cmd: isWin ? 'npx.cmd' : 'npx',
     args: ['next', 'dev', '-p', '8080'],
     cwd: rootDir,
   },
   {
-    name: 'SERVER  ',
+    name: 'SERVER   ',
     color: colors.server,
     cmd: 'node',
     args: [path.join(__dirname, 'run-server.js')],
+    cwd: rootDir,
+  },
+  {
+    name: 'ML-ENGINE',
+    color: colors.ml,
+    cmd: 'node',
+    args: [path.join(__dirname, 'run-ml.js')],
     cwd: rootDir,
   },
 ];

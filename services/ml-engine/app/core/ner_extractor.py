@@ -1,8 +1,8 @@
-"""Rule-based + gazetteer NER pipeline tailored for Indian intelligence documents."""
+"""Hybrid Rule-based + Gazetteer + Vernacular Contextual NER pipeline tailored for Indian intelligence and law enforcement documents."""
 import re
 import uuid
 from typing import List, Tuple
-from app.schemas.extract import ExtractedEntity, ProposedRelationship
+from app.schemas import ExtractedEntity, ProposedRelationship
 
 # Indian State & UT RTO Prefix Codes
 INDIAN_STATE_CODES = (
@@ -32,6 +32,12 @@ DATE_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+# Statutory Indian Government & Financial Identifiers
+PAN_REGEX = re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")
+AADHAAR_REGEX = re.compile(r"\b[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}\b")
+UPI_REGEX = re.compile(r"\b[a-zA-Z0-9_\.\-]+@(okhdfcbank|okaxis|oksbi|okicici|paytm|ybl|ibl|upi|axl|apl|barodampay|waaxis)\b", re.IGNORECASE)
+IFSC_REGEX = re.compile(r"\b[A-Z]{4}0[A-Z0-9]{6}\b")
+
 ORG_SUFFIXES = [
     "Logistics", "Enterprises", "Pvt Ltd", "Private Limited", "Limited", "LLC", "Holdings",
     "Trading", "Imports", "Exports", "Industries", "Finance", "Financiers", "Consultancy",
@@ -46,7 +52,14 @@ COMMON_LOCATIONS = {
     "Dubai", "Singapore", "Kathmandu", "Dhaka", "Colombo", "Bangkok"
 }
 
-PERSON_TITLES = {"Mr.", "Mr", "Mrs.", "Mrs", "Ms.", "Ms", "Dr.", "Dr", "Shri", "Smt", "Inspector", "Officer", "Advocate"}
+PERSON_TITLES = {"Mr.", "Mr", "Mrs.", "Mrs", "Ms.", "Ms", "Dr.", "Dr", "Shri", "Smt", "Inspector", "Officer", "Advocate", "Mohd", "Syed"}
+
+INDIAN_SURNAMES = (
+    "Rathore|Verma|Malhotra|Singhania|Gounder|Subramanian|Joshi|Kapoor|Yadav|Paswan|"
+    "Sharma|Gupta|Khan|Singh|Kumar|Ali|Patel|Reddy|Nair|Rao|Chauhan|Mishra|Bose|Das|Gowda|Bhatt|Kulkarni"
+)
+INDIAN_SURNAME_REGEX = re.compile(rf"\b([A-Z][a-z]{{2,15}}\s+(?:{INDIAN_SURNAMES}))\b")
+
 STOPWORDS = {
     "The", "This", "That", "These", "Those", "Case", "FIR", "Report", "Court", "Police", "Station",
     "Subject", "Target", "Suspect", "Witness", "Source", "Date", "Time", "Amount", "Phone", "Vehicle"
@@ -61,246 +74,299 @@ def normalize_phone(raw: str) -> str:
         return f"+91{digits}"
     if digits.startswith("0") and len(digits) == 11:
         return f"+91{digits[1:]}"
-    return f"+91{digits[-10:]}" if len(digits) >= 10 else raw
+    return f"+91{digits[-10:]}" if len(digits) >= 10 else f"+{digits}"
 
 
 def normalize_vehicle(raw: str) -> str:
     return re.sub(r"[\s-]", "", raw).upper()
 
 
-def parse_money_value(raw: str) -> float:
-    text = raw.lower().replace(",", "").replace("₹", "").replace("rs.", "").replace("rs", "").replace("inr", "").replace("rupees", "").strip()
-    multiplier = 1.0
-    if "crore" in text:
-        multiplier = 10000000.0
-        text = text.replace("crore", "").strip()
-    elif "lakh" in text:
-        multiplier = 100000.0
-        text = text.replace("lakh", "").strip()
-    elif "million" in text or "m" in text:
-        multiplier = 1000000.0
-        text = text.replace("million", "").replace("m", "").strip()
-    elif "k" in text:
-        multiplier = 1000.0
-        text = text.replace("k", "").strip()
-    try:
-        return float(text.strip()) * multiplier
-    except ValueError:
-        return 0.0
-
-
 class NERExtractor:
-    """Extracts entities and proposes evidential relationships from raw text."""
+    """Extracts entities (person, organization, phone, vehicle, location, money, date, pan, aadhaar, upi)
+    and infers candidate relationships from raw Hindi/English investigative text."""
 
     def extract(self, text: str) -> Tuple[List[ExtractedEntity], List[ProposedRelationship]]:
+        return self.extract_all(text)
+
+    def extract_all(self, text: str) -> Tuple[List[ExtractedEntity], List[ProposedRelationship]]:
         entities: List[ExtractedEntity] = []
         occupied_spans: List[Tuple[int, int]] = []
 
-        def span_overlaps(start: int, end: int) -> bool:
-            return any(max(start, os) < min(end, oe) for os, oe in occupied_spans)
+        def is_overlapping(start: int, end: int) -> bool:
+            for s, e in occupied_spans:
+                if not (end <= s or start >= e):
+                    return True
+            return False
 
         # 1. Phone Numbers
         for m in PHONE_REGEX.finditer(text):
             s, e = m.span()
-            if not span_overlaps(s, e):
-                raw = m.group(0).strip()
-                norm = normalize_phone(raw)
+            if not is_overlapping(s, e):
+                raw = m.group(0)
                 entities.append(ExtractedEntity(
-                    id=f"temp_ph_{uuid.uuid4().hex[:6]}",
+                    id=f"temp_phone_{uuid.uuid4().hex[:6]}",
                     type="phone",
-                    label=norm,
+                    label=normalize_phone(raw),
                     original_text=raw,
                     span=(s, e),
                     confidence=0.98,
-                    meta={"normalized": norm}
+                    meta={"normalized": normalize_phone(raw)}
                 ))
                 occupied_spans.append((s, e))
 
-        # 2. Vehicle Registration Plates
+        # 2. Vehicle License Plates
         for m in VEHICLE_REGEX.finditer(text):
             s, e = m.span()
-            if not span_overlaps(s, e):
-                raw = m.group(0).strip()
-                norm = normalize_vehicle(raw)
+            if not is_overlapping(s, e):
+                raw = m.group(0)
                 entities.append(ExtractedEntity(
-                    id=f"temp_v_{uuid.uuid4().hex[:6]}",
+                    id=f"temp_veh_{uuid.uuid4().hex[:6]}",
                     type="vehicle",
-                    label=norm,
+                    label=normalize_vehicle(raw),
                     original_text=raw,
                     span=(s, e),
                     confidence=0.95,
-                    meta={"plate": norm}
+                    meta={"normalized": normalize_vehicle(raw)}
                 ))
                 occupied_spans.append((s, e))
 
         # 3. Monetary Amounts
         for m in MONEY_REGEX.finditer(text):
             s, e = m.span()
-            if not span_overlaps(s, e):
-                raw = m.group(0).strip()
-                val = parse_money_value(raw)
+            if not is_overlapping(s, e):
+                raw = m.group(0)
                 entities.append(ExtractedEntity(
-                    id=f"temp_m_{uuid.uuid4().hex[:6]}",
+                    id=f"temp_money_{uuid.uuid4().hex[:6]}",
                     type="money",
-                    label=f"{val:,.2f} INR",
+                    label=raw.strip(),
                     original_text=raw,
                     span=(s, e),
                     confidence=0.92,
-                    meta={"amount": val}
+                    meta={"raw": raw.strip()}
                 ))
                 occupied_spans.append((s, e))
 
-        # 4. Dates
-        for m in DATE_REGEX.finditer(text):
+        # 4. PAN Cards
+        for m in PAN_REGEX.finditer(text):
             s, e = m.span()
-            if not span_overlaps(s, e):
-                raw = m.group(0).strip()
+            if not is_overlapping(s, e):
+                raw = m.group(0).upper()
                 entities.append(ExtractedEntity(
-                    id=f"temp_d_{uuid.uuid4().hex[:6]}",
-                    type="date",
+                    id=f"temp_pan_{uuid.uuid4().hex[:6]}",
+                    type="pan",
                     label=raw,
                     original_text=raw,
                     span=(s, e),
-                    confidence=0.88,
+                    confidence=0.97,
+                    meta={"identifier": "PAN"}
                 ))
                 occupied_spans.append((s, e))
 
-        # 5. Organizations (Regex + Suffix grammars)
+        # 5. Aadhaar Numbers
+        for m in AADHAAR_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0).strip()
+                entities.append(ExtractedEntity(
+                    id=f"temp_aadhaar_{uuid.uuid4().hex[:6]}",
+                    type="aadhaar",
+                    label=raw,
+                    original_text=raw,
+                    span=(s, e),
+                    confidence=0.95,
+                    meta={"identifier": "Aadhaar"}
+                ))
+                occupied_spans.append((s, e))
+
+        # 6. UPI IDs
+        for m in UPI_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0).lower()
+                entities.append(ExtractedEntity(
+                    id=f"temp_upi_{uuid.uuid4().hex[:6]}",
+                    type="upi_id",
+                    label=raw,
+                    original_text=m.group(0),
+                    span=(s, e),
+                    confidence=0.96,
+                    meta={"payment_rail": "UPI"}
+                ))
+                occupied_spans.append((s, e))
+
+        # 7. IFSC Codes
+        for m in IFSC_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0).upper()
+                entities.append(ExtractedEntity(
+                    id=f"temp_ifsc_{uuid.uuid4().hex[:6]}",
+                    type="ifsc",
+                    label=raw,
+                    original_text=raw,
+                    span=(s, e),
+                    confidence=0.94,
+                    meta={"bank_code": raw[:4]}
+                ))
+                occupied_spans.append((s, e))
+
+        # 8. Dates
+        for m in DATE_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0)
+                entities.append(ExtractedEntity(
+                    id=f"temp_date_{uuid.uuid4().hex[:6]}",
+                    type="date",
+                    label=raw.strip(),
+                    original_text=raw,
+                    span=(s, e),
+                    confidence=0.90,
+                    meta={"raw": raw.strip()}
+                ))
+                occupied_spans.append((s, e))
+
+        # 9. Organizations via Known Suffix Gazetteers
         for suffix in ORG_SUFFIXES:
-            pattern = re.compile(rf"\b([A-Z][A-Za-z0-9&'\.\s]{{1,30}}\s+{re.escape(suffix)})\b")
+            pattern = re.compile(rf"\b([A-Z][A-Za-z0-9&'\.\s]{{1,35}}\s+{re.escape(suffix)})\b")
             for m in pattern.finditer(text):
                 s, e = m.span()
-                if not span_overlaps(s, e):
-                    raw = m.group(0).strip()
+                if not is_overlapping(s, e):
+                    raw = m.group(1).strip()
                     entities.append(ExtractedEntity(
-                        id=f"temp_o_{uuid.uuid4().hex[:6]}",
+                        id=f"temp_org_{uuid.uuid4().hex[:6]}",
                         type="organization",
                         label=raw,
                         original_text=raw,
                         span=(s, e),
-                        confidence=0.90,
+                        confidence=0.88,
+                        meta={"suffix": suffix}
                     ))
                     occupied_spans.append((s, e))
 
-        # 6. Locations (Gazetteer lookup)
+        # 10. Common Locations
         for loc in COMMON_LOCATIONS:
             pattern = re.compile(rf"\b{re.escape(loc)}\b", re.IGNORECASE)
             for m in pattern.finditer(text):
                 s, e = m.span()
-                if not span_overlaps(s, e):
+                if not is_overlapping(s, e):
+                    raw = m.group(0)
                     entities.append(ExtractedEntity(
-                        id=f"temp_l_{uuid.uuid4().hex[:6]}",
+                        id=f"temp_loc_{uuid.uuid4().hex[:6]}",
                         type="location",
                         label=loc,
-                        original_text=m.group(0),
+                        original_text=raw,
                         span=(s, e),
-                        confidence=0.89,
+                        confidence=0.94,
+                        meta={"city": loc}
                     ))
                     occupied_spans.append((s, e))
 
-        # 7. Persons (Capitalized 2-3 word sequences with title or name heuristics)
-        person_pattern = re.compile(r"\b(?:(Mr\.|Mrs\.|Ms\.|Dr\.|Shri|Smt|Inspector|Officer)\s+)?([A-Z][a-z]{2,15}(?:\s+[A-Z][a-z]{2,15}){1,2})\b")
-        for m in person_pattern.finditer(text):
+        # 11. Person Names (Indian Titles + Capitalized Name Tokens)
+        title_pattern = re.compile(
+            r"\b(" + "|".join(re.escape(t) for t in PERSON_TITLES) + r")\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b"
+        )
+        for m in title_pattern.finditer(text):
             s, e = m.span()
-            if not span_overlaps(s, e):
-                raw = m.group(0).strip()
+            if not is_overlapping(s, e):
+                name = m.group(2).strip()
+                entities.append(ExtractedEntity(
+                    id=f"temp_p_{uuid.uuid4().hex[:6]}",
+                    type="person",
+                    label=name,
+                    original_text=m.group(0),
+                    span=(s, e),
+                    confidence=0.91,
+                    meta={"title": m.group(1)}
+                ))
+                occupied_spans.append((s, e))
+
+        # 12. Contextual Indian Names via Surnames
+        for m in INDIAN_SURNAME_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(1).strip()
                 first_word = raw.split()[0]
-                if first_word not in STOPWORDS and len(raw.split()) >= 2:
+                if first_word not in STOPWORDS:
                     entities.append(ExtractedEntity(
                         id=f"temp_p_{uuid.uuid4().hex[:6]}",
                         type="person",
                         label=raw,
                         original_text=raw,
                         span=(s, e),
-                        confidence=0.86,
+                        confidence=0.88,
+                        meta={"pattern": "indian_surname"}
                     ))
                     occupied_spans.append((s, e))
 
-        # Sort entities by appearance in text
+        # 13. Generic 2-to-3 Capitalized Words for Person / Target Detection
+        cap_pattern = re.compile(r"\b([A-Z][a-z]{2,15}(?:\s+[A-Z][a-z]{2,15}){1,2})\b")
+        for m in cap_pattern.finditer(text):
+            s, e = m.span()
+            raw = m.group(1).strip()
+            first_word = raw.split()[0]
+            if not is_overlapping(s, e) and first_word not in STOPWORDS and raw not in COMMON_LOCATIONS:
+                entities.append(ExtractedEntity(
+                    id=f"temp_p_{uuid.uuid4().hex[:6]}",
+                    type="person",
+                    label=raw,
+                    original_text=raw,
+                    span=(s, e),
+                    confidence=0.76,
+                    meta={"inferred": True}
+                ))
+                occupied_spans.append((s, e))
+
+        # Sort entities by appearance
         entities.sort(key=lambda x: x.span[0])
 
-        # 8. Proposed Relationships via Sentence-level co-occurrence and cue verbs
-        relationships = self._propose_relationships(text, entities)
+        # Infer Relationships based on proximity and vernacular cues
+        relationships = self._infer_relationships(text, entities)
 
         return entities, relationships
 
-    def _propose_relationships(self, text: str, entities: List[ExtractedEntity]) -> List[ProposedRelationship]:
+    def _infer_relationships(self, text: str, entities: List[ExtractedEntity]) -> List[ProposedRelationship]:
         relationships: List[ProposedRelationship] = []
-        sentences = re.split(r"(?<=[.!?\n])\s+", text)
+        if len(entities) < 2:
+            return relationships
 
-        for sent in sentences:
-            # Find entities contained in this sentence
-            sent_entities = [e for e in entities if e.original_text in sent]
-            if len(sent_entities) < 2:
-                continue
+        for i in range(len(entities)):
+            for j in range(i + 1, min(i + 4, len(entities))):
+                e1 = entities[i]
+                e2 = entities[j]
 
-            persons = [e for e in sent_entities if e.type == "person"]
-            phones = [e for e in sent_entities if e.type == "phone"]
-            vehicles = [e for e in sent_entities if e.type == "vehicle"]
-            orgs = [e for e in sent_entities if e.type == "organization"]
-            moneys = [e for e in sent_entities if e.type == "money"]
-            locations = [e for e in sent_entities if e.type == "location"]
+                char_dist = e2.span[0] - e1.span[1]
+                if char_dist > 180:
+                    continue
 
-            sent_lower = sent.lower()
+                snippet = text[e1.span[0]:e2.span[1]].lower()
 
-            # Person <-> Phone (uses_phone / contact)
-            for p in persons:
-                for ph in phones:
-                    relationships.append(ProposedRelationship(
-                        source_temp_id=p.id,
-                        target_temp_id=ph.id,
-                        rel_type="uses_phone",
-                        confidence=0.92,
-                        evidence_text=sent.strip()
-                    ))
+                # Infer relationship type with Vernacular Indian support
+                rel_type = "associated_with"
+                confidence = 0.70
 
-            # Person <-> Vehicle (drives_vehicle / registered_owner)
-            for p in persons:
-                for v in vehicles:
-                    rel_name = "registered_owner" if "owner" in sent_lower or "registered" in sent_lower else "drives_vehicle"
-                    relationships.append(ProposedRelationship(
-                        source_temp_id=p.id,
-                        target_temp_id=v.id,
-                        rel_type=rel_name,
-                        confidence=0.88,
-                        evidence_text=sent.strip()
-                    ))
+                if any(w in snippet for w in ["call", "called", "spoke", "contact", "phone", "dial", "sampark", "baat"]):
+                    rel_type = "communicated_with"
+                    confidence = 0.88
+                elif any(w in snippet for w in ["transfer", "sent", "paid", "rupees", "inr", "lakh", "crore", "account", "hawala", "diya", "bheja", "angadiya", "khatabook"]):
+                    rel_type = "transferred_money_to"
+                    confidence = 0.92
+                elif any(w in snippet for w in ["drove", "vehicle", "car", "plate", "owner", "registration", "se aaya", "convoy", "gadi", "scooter", "truck"]):
+                    rel_type = "owns"
+                    confidence = 0.85
+                elif any(w in snippet for w in ["director", "owner", "employee", "works at", "proprietor", "partner", "malik", "sanchalak"]):
+                    rel_type = "employed_by"
+                    confidence = 0.86
+                elif any(w in snippet for w in ["traveled", "fled", "met", "accompanied", "saath"]):
+                    rel_type = "traveled_with"
+                    confidence = 0.80
 
-            # Person / Org <-> Money / Org (transferred_money)
-            if any(cue in sent_lower for cue in ["transfer", "sent", "paid", "remit", "deposited", "hawala"]):
-                actors = persons + orgs
-                if len(actors) >= 2:
-                    amt = moneys[0].meta.get("amount", 0.0) if moneys else 0.0
-                    relationships.append(ProposedRelationship(
-                        source_temp_id=actors[0].id,
-                        target_temp_id=actors[1].id,
-                        rel_type="transferred_money",
-                        confidence=0.90,
-                        evidence_text=sent.strip(),
-                        meta={"amount": amt}
-                    ))
-
-            # Person <-> Organization (works_for / director_of / associate)
-            for p in persons:
-                for o in orgs:
-                    rel_name = "director_of" if any(k in sent_lower for k in ["director", "owner", "founder", "head"]) else "associated_with"
-                    relationships.append(ProposedRelationship(
-                        source_temp_id=p.id,
-                        target_temp_id=o.id,
-                        rel_type=rel_name,
-                        confidence=0.85,
-                        evidence_text=sent.strip()
-                    ))
-
-            # Person <-> Location (seen_at / visited)
-            for p in persons:
-                for loc in locations:
-                    relationships.append(ProposedRelationship(
-                        source_temp_id=p.id,
-                        target_temp_id=loc.id,
-                        rel_type="visited_location",
-                        confidence=0.80,
-                        evidence_text=sent.strip()
-                    ))
+                relationships.append(ProposedRelationship(
+                    source_temp_id=e1.id,
+                    target_temp_id=e2.id,
+                    rel_type=rel_type,
+                    confidence=confidence,
+                    evidence_text=text[max(0, e1.span[0] - 20):min(len(text), e2.span[1] + 20)].strip()
+                ))
 
         return relationships

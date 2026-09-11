@@ -137,7 +137,7 @@ export default function SettingsPage() {
       setNewUser({
         name: '',
         email: '',
-        password: 'demo123',
+        password: '',
         role: 'police_station',
         department: 'District Police Department',
         badgeNumber: '',

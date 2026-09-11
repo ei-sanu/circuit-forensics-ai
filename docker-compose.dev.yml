@@ -7,7 +7,7 @@ services:
       - POSTGRES_PASSWORD=circuit_pass_2026
       - POSTGRES_DB=circuit_db
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     networks:
@@ -34,11 +34,30 @@ services:
       - JWT_SECRET=jwt-secret-circuit-auth-key-2026
       - BIOMETRIC_ENCRYPTION_KEY=circuit-biometric-secret-encryption-key-2026-secure
       - BIOMETRIC_ENABLED=true
-      - CORS_ORIGIN=http://localhost:8080,http://localhost:3000,*
+      - CORS_ORIGIN=http://localhost:8080,http://localhost:3000
+      - ML_ENGINE_URL=http://ml-engine:8001
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000", "--reload"]
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - circuit-dev-net
+
+  ml-engine:
+    build:
+      context: ./services/ml-engine
+      dockerfile: Dockerfile
+    container_name: circuit-ml-engine-dev
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/ml-engine/app:/app/app
+    environment:
+      - PORT=8001
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+      - INTERNAL_SERVICE_SECRET=dev-secret-internal-service-key-2026
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
     networks:
       - circuit-dev-net
 
@@ -49,4 +68,3 @@ volumes:
 networks:
   circuit-dev-net:
     driver: bridge
-

@@ -287,6 +287,18 @@ export const api = {
     const { MASTER_VEHICLES } = await import('./data');
     return MASTER_VEHICLES.find((v) => v.vehicleId === vehicleId || v.plateNumber === vehicleId) || null;
   },
+  createVehicle: async (data: any) => {
+    return request<any>('/vehicles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  scanVehiclePlate: async (plateNumber: string) => {
+    return request<any>('/vehicles/scan-plate', {
+      method: 'POST',
+      body: JSON.stringify({ plateNumber }),
+    });
+  },
 
   // AI / ML Insights
   getInsights: async () => {

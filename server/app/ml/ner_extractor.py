@@ -1,4 +1,4 @@
-"""Rule-based + gazetteer NER pipeline tailored for Indian intelligence documents."""
+"""Hybrid Rule-based + Gazetteer + Vernacular Contextual NER pipeline tailored for Indian intelligence and law enforcement documents."""
 import re
 import uuid
 from typing import List, Tuple
@@ -32,6 +32,12 @@ DATE_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+# Statutory Indian Government & Financial Identifiers
+PAN_REGEX = re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")
+AADHAAR_REGEX = re.compile(r"\b[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}\b")
+UPI_REGEX = re.compile(r"\b[a-zA-Z0-9_\.\-]+@(okhdfcbank|okaxis|oksbi|okicici|paytm|ybl|ibl|upi|axl|apl|barodampay|waaxis)\b", re.IGNORECASE)
+IFSC_REGEX = re.compile(r"\b[A-Z]{4}0[A-Z0-9]{6}\b")
+
 ORG_SUFFIXES = [
     "Logistics", "Enterprises", "Pvt Ltd", "Private Limited", "Limited", "LLC", "Holdings",
     "Trading", "Imports", "Exports", "Industries", "Finance", "Financiers", "Consultancy",
@@ -46,7 +52,14 @@ COMMON_LOCATIONS = {
     "Dubai", "Singapore", "Kathmandu", "Dhaka", "Colombo", "Bangkok"
 }
 
-PERSON_TITLES = {"Mr.", "Mr", "Mrs.", "Mrs", "Ms.", "Ms", "Dr.", "Dr", "Shri", "Smt", "Inspector", "Officer", "Advocate"}
+PERSON_TITLES = {"Mr.", "Mr", "Mrs.", "Mrs", "Ms.", "Ms", "Dr.", "Dr", "Shri", "Smt", "Inspector", "Officer", "Advocate", "Mohd", "Syed"}
+
+INDIAN_SURNAMES = (
+    "Rathore|Verma|Malhotra|Singhania|Gounder|Subramanian|Joshi|Kapoor|Yadav|Paswan|"
+    "Sharma|Gupta|Khan|Singh|Kumar|Ali|Patel|Reddy|Nair|Rao|Chauhan|Mishra|Bose|Das|Gowda|Bhatt|Kulkarni"
+)
+INDIAN_SURNAME_REGEX = re.compile(rf"\b([A-Z][a-z]{{2,15}}\s+(?:{INDIAN_SURNAMES}))\b")
+
 STOPWORDS = {
     "The", "This", "That", "These", "Those", "Case", "FIR", "Report", "Court", "Police", "Station",
     "Subject", "Target", "Suspect", "Witness", "Source", "Date", "Time", "Amount", "Phone", "Vehicle"
@@ -69,8 +82,11 @@ def normalize_vehicle(raw: str) -> str:
 
 
 class NERExtractor:
-    """Extracts entities (person, organization, phone, vehicle, location, money, date)
+    """Extracts entities (person, organization, phone, vehicle, location, money, date, pan, aadhaar, upi)
     and infers candidate relationships from raw Hindi/English investigative text."""
+
+    def extract(self, text: str) -> Tuple[List[ExtractedEntity], List[ProposedRelationship]]:
+        return self.extract_all(text)
 
     def extract_all(self, text: str) -> Tuple[List[ExtractedEntity], List[ProposedRelationship]]:
         entities: List[ExtractedEntity] = []
@@ -130,7 +146,71 @@ class NERExtractor:
                 ))
                 occupied_spans.append((s, e))
 
-        # 4. Dates
+        # 4. PAN Cards
+        for m in PAN_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0).upper()
+                entities.append(ExtractedEntity(
+                    id=f"temp_pan_{uuid.uuid4().hex[:6]}",
+                    type="pan",
+                    label=raw,
+                    original_text=raw,
+                    span=(s, e),
+                    confidence=0.97,
+                    meta={"identifier": "PAN"}
+                ))
+                occupied_spans.append((s, e))
+
+        # 5. Aadhaar Numbers
+        for m in AADHAAR_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0).strip()
+                entities.append(ExtractedEntity(
+                    id=f"temp_aadhaar_{uuid.uuid4().hex[:6]}",
+                    type="aadhaar",
+                    label=raw,
+                    original_text=raw,
+                    span=(s, e),
+                    confidence=0.95,
+                    meta={"identifier": "Aadhaar"}
+                ))
+                occupied_spans.append((s, e))
+
+        # 6. UPI IDs
+        for m in UPI_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0).lower()
+                entities.append(ExtractedEntity(
+                    id=f"temp_upi_{uuid.uuid4().hex[:6]}",
+                    type="upi_id",
+                    label=raw,
+                    original_text=m.group(0),
+                    span=(s, e),
+                    confidence=0.96,
+                    meta={"payment_rail": "UPI"}
+                ))
+                occupied_spans.append((s, e))
+
+        # 7. IFSC Codes
+        for m in IFSC_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(0).upper()
+                entities.append(ExtractedEntity(
+                    id=f"temp_ifsc_{uuid.uuid4().hex[:6]}",
+                    type="ifsc",
+                    label=raw,
+                    original_text=raw,
+                    span=(s, e),
+                    confidence=0.94,
+                    meta={"bank_code": raw[:4]}
+                ))
+                occupied_spans.append((s, e))
+
+        # 8. Dates
         for m in DATE_REGEX.finditer(text):
             s, e = m.span()
             if not is_overlapping(s, e):
@@ -146,7 +226,7 @@ class NERExtractor:
                 ))
                 occupied_spans.append((s, e))
 
-        # 5. Organizations via Known Suffix Gazetteers
+        # 9. Organizations via Known Suffix Gazetteers
         for suffix in ORG_SUFFIXES:
             pattern = re.compile(rf"\b([A-Z][A-Za-z0-9&'\.\s]{{1,35}}\s+{re.escape(suffix)})\b")
             for m in pattern.finditer(text):
@@ -164,7 +244,7 @@ class NERExtractor:
                     ))
                     occupied_spans.append((s, e))
 
-        # 6. Common Locations
+        # 10. Common Locations
         for loc in COMMON_LOCATIONS:
             pattern = re.compile(rf"\b{re.escape(loc)}\b", re.IGNORECASE)
             for m in pattern.finditer(text):
@@ -182,7 +262,7 @@ class NERExtractor:
                     ))
                     occupied_spans.append((s, e))
 
-        # 7. Person Names (Pattern-based: Titles + Capitalized Name Tokens)
+        # 11. Person Names (Indian Titles + Capitalized Name Tokens)
         title_pattern = re.compile(
             r"\b(" + "|".join(re.escape(t) for t in PERSON_TITLES) + r")\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b"
         )
@@ -201,7 +281,25 @@ class NERExtractor:
                 ))
                 occupied_spans.append((s, e))
 
-        # Generic 2-to-3 Capitalized Words for Person / High-Value Target Detection
+        # 12. Contextual Indian Names via Surnames
+        for m in INDIAN_SURNAME_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(1).strip()
+                first_word = raw.split()[0]
+                if first_word not in STOPWORDS:
+                    entities.append(ExtractedEntity(
+                        id=f"temp_p_{uuid.uuid4().hex[:6]}",
+                        type="person",
+                        label=raw,
+                        original_text=raw,
+                        span=(s, e),
+                        confidence=0.88,
+                        meta={"pattern": "indian_surname"}
+                    ))
+                    occupied_spans.append((s, e))
+
+        # 13. Generic 2-to-3 Capitalized Words for Person / Target Detection
         cap_pattern = re.compile(r"\b([A-Z][a-z]{2,15}(?:\s+[A-Z][a-z]{2,15}){1,2})\b")
         for m in cap_pattern.finditer(text):
             s, e = m.span()
@@ -219,10 +317,10 @@ class NERExtractor:
                 ))
                 occupied_spans.append((s, e))
 
-        # Sort entities by start span
+        # Sort entities by appearance
         entities.sort(key=lambda x: x.span[0])
 
-        # Infer Relationships based on proximity and sentence co-occurrence
+        # Infer Relationships based on proximity and vernacular cues
         relationships = self._infer_relationships(text, entities)
 
         return entities, relationships
@@ -232,35 +330,34 @@ class NERExtractor:
         if len(entities) < 2:
             return relationships
 
-        # Co-occurrence in sentence window (max 150 chars apart)
         for i in range(len(entities)):
             for j in range(i + 1, min(i + 4, len(entities))):
                 e1 = entities[i]
                 e2 = entities[j]
 
                 char_dist = e2.span[0] - e1.span[1]
-                if char_dist > 150:
+                if char_dist > 180:
                     continue
 
                 snippet = text[e1.span[0]:e2.span[1]].lower()
 
-                # Infer relationship type
+                # Infer relationship type with Vernacular Indian support
                 rel_type = "associated_with"
                 confidence = 0.70
 
-                if any(w in snippet for w in ["call", "called", "spoke", "contact", "phone", "dial"]):
+                if any(w in snippet for w in ["call", "called", "spoke", "contact", "phone", "dial", "sampark", "baat"]):
                     rel_type = "communicated_with"
                     confidence = 0.88
-                elif any(w in snippet for w in ["transfer", "sent", "paid", "rupees", "inr", "lakh", "crore", "account"]):
+                elif any(w in snippet for w in ["transfer", "sent", "paid", "rupees", "inr", "lakh", "crore", "account", "hawala", "diya", "bheja", "angadiya", "khatabook"]):
                     rel_type = "transferred_money_to"
-                    confidence = 0.90
-                elif any(w in snippet for w in ["drove", "vehicle", "car", "plate", "owner", "registration"]):
+                    confidence = 0.92
+                elif any(w in snippet for w in ["drove", "vehicle", "car", "plate", "owner", "registration", "se aaya", "convoy", "gadi", "scooter", "truck"]):
                     rel_type = "owns"
                     confidence = 0.85
-                elif any(w in snippet for w in ["director", "owner", "employee", "works at", "proprietor", "partner"]):
+                elif any(w in snippet for w in ["director", "owner", "employee", "works at", "proprietor", "partner", "malik", "sanchalak"]):
                     rel_type = "employed_by"
                     confidence = 0.86
-                elif any(w in snippet for w in ["traveled", "fled", "met", "accompanied"]):
+                elif any(w in snippet for w in ["traveled", "fled", "met", "accompanied", "saath"]):
                     rel_type = "traveled_with"
                     confidence = 0.80
 

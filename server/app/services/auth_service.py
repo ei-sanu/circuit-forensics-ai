@@ -19,7 +19,7 @@ logger = logging.getLogger("CIRCUIT.AuthService")
 class AuthService:
     async def seed_default_users(self):
         """Seed default enterprise accounts across all 5 roles in PostgreSQL."""
-        seed_pwd = hash_password("demo123")
+        seed_pwd = hash_password(settings.default_seed_password)
         now = datetime.now(timezone.utc)
 
         default_users = [
@@ -191,9 +191,7 @@ class AuthService:
         if not user:
             raise UnauthorizedError("Invalid email or password")
 
-        pwd_matches = verify_password(dto.password, user.password_hash) or (
-            dto.password in ("circuit11", "demo123") and user.email.endswith("@circuit.gov")
-        )
+        pwd_matches = verify_password(dto.password, user.password_hash)
         if not pwd_matches:
             raise UnauthorizedError("Invalid email or password")
 

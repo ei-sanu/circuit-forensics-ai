@@ -8,7 +8,6 @@ const path = require('path');
 
 const isWin = process.platform === 'win32';
 const rootDir = path.resolve(__dirname, '..');
-const serverDir = path.join(rootDir, 'server');
 const npmCmd = isWin ? 'npm.cmd' : 'npm';
 
 console.log(`\n======================================================`);
@@ -29,9 +28,7 @@ if (rootResult.status !== 0) {
 
 // 2. Install Server (FastAPI API) dependencies
 console.log(`\n📦 [2/3] Setting up FastAPI Core Backend dependencies...`);
-const serverReqPath = path.join(serverDir, 'requirements.txt');
-const pipCmd = isWin ? 'pip' : 'pip3';
-const serverResult = spawnSync('node', [path.join(__dirname, 'install-ml.js')], {
+const serverResult = spawnSync('node', [path.join(__dirname, 'install-server.js')], {
   cwd: rootDir,
   stdio: 'inherit',
   shell: isWin,

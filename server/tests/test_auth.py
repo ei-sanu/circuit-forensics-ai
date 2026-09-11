@@ -51,3 +51,23 @@ def test_get_users_allowed_for_admin(client, admin_token):
     )
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+def test_login_backdoor_is_strictly_eliminated(client):
+    # Attempting to use circuit11 or incorrect password on user account fails
+    response = client.post("/api/auth/login", json={"email": "investigator@circuit.gov", "password": "wrong-password-attempt"})
+    assert response.status_code == 401
+    assert "Invalid email or password" in response.json()["message"]
+
+def test_production_config_fails_fast_on_insecure_keys():
+    from app.core.config import Settings
+    with pytest.raises(ValueError, match="Production deployment rejected: JWT_SECRET"):
+        Settings(node_env="production", jwt_secret="jwt-secret-circuit-auth-key-2026")
+
+    with pytest.raises(ValueError, match="CORS_ORIGIN contains wildcard"):
+        Settings(
+            node_env="production",
+            jwt_secret="a" * 32,
+            biometric_encryption_key="b" * 32,
+            cors_origin="http://localhost:8080,*"
+        )
+

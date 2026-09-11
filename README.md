@@ -157,10 +157,10 @@ NODE_ENV=development
 DATABASE_URL=postgresql+asyncpg://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
-JWT_SECRET=jwt-secret-circuit-auth-key-2026
-BIOMETRIC_ENCRYPTION_KEY=circuit-biometric-secret-encryption-key-2026-secure
+JWT_SECRET=replace-with-a-32-byte-random-high-entropy-secret
+BIOMETRIC_ENCRYPTION_KEY=replace-with-a-32-byte-hex-encryption-key
 BIOMETRIC_ENABLED=true
-CORS_ORIGIN=http://localhost:8080,http://localhost:3000,http://localhost:5173,*
+CORS_ORIGIN=http://localhost:8080,http://localhost:3000
 ```
 
 ### Step 3: Run All Services Concurrently
@@ -212,16 +212,21 @@ docker compose -f docker-compose.dev.yml up
 
 ---
 
-## 👥 Default System Login Credentials
+## 👥 Role Accounts & Enterprise Access Control
 
-| Role | Email / Identifier | Password | Description |
-|---|---|---|---|
-| **System Commander (Admin)** | `circuit@circuit.gov` | `circuit11` | Primary administrator account |
-| **Administrator** | `admin@circuit.gov` | `circuit11` / `demo123` | System settings, user provisioning & audit logs |
-| **Senior Investigator** | `investigator@circuit.gov` | `circuit11` / `demo123` | Case management, graph analysis & evidence review |
-| **Intelligence Analyst** | `analyst@circuit.gov` | `circuit11` / `demo123` | Financial loops, mule tracking & anomaly monitoring |
-| **Police Station Lead** | `police@circuit.gov` | `circuit11` / `demo123` | Station FIR filing & live broadcast alerts |
-| **HR Directorate** | `hr@circuit.gov` | `circuit11` / `demo123` | Personnel onboarding & biometric credential issuance |
+CIRCUIT implements 5 granular Role-Based Access Control (RBAC) tiers:
+
+| Role | Default Identifier | Access & Authority Scope |
+|---|---|---|
+| **System Commander (Admin)** | `circuit@circuit.gov` | Primary administrator account with full platform control |
+| **Administrator** | `admin@circuit.gov` | System configuration, user provisioning & immutable audit logs |
+| **Senior Investigator** | `investigator@circuit.gov` | Case management, intelligence graph analysis & evidence review |
+| **Intelligence Analyst** | `analyst@circuit.gov` | Financial loops, mule tracking & AI anomaly monitoring |
+| **Police Station Lead** | `police@circuit.gov` | Station FIR filing, incident registry & live broadcast alerts |
+| **HR Directorate** | `hr@circuit.gov` | Personnel onboarding & biometric credential issuance |
+
+> [!IMPORTANT]
+> **Production Credentials**: For local development and demonstration, initial credentials are set via the `SEED_DEFAULT_PASSWORD` environment variable (defaults to `demo123` in dev only). In production environments, all passwords must be provisioned securely via environment secrets, and multi-factor biometric verification must be enforced. No static fallback passwords or backdoors exist.
 
 ---
 

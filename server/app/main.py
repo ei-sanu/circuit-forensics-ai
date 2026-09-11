@@ -17,6 +17,7 @@ from app.services.case_service import case_service
 from app.services.entity_service import entity_service
 from app.services.graph_service import graph_service
 from app.services.alert_service import alert_service
+from app.services.vehicle_service import vehicle_service
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,6 +43,7 @@ async def lifespan(app: FastAPI):
             entity_service.seed_demo_entities(),
             graph_service.seed_demo_graph(),
             alert_service.seed_demo_alerts(),
+            vehicle_service.seed_default_vehicles(),
             return_exceptions=True,
         )
     except Exception as e:

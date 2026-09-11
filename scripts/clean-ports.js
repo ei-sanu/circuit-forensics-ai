@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
 
-const ports = [8080];
+const ports = [8080, 3000, 8001];
 const isWin = process.platform === 'win32';
 
 ports.forEach((port) => {
@@ -23,9 +23,14 @@ ports.forEach((port) => {
       pids.forEach((pid) => {
         if (pid && !isNaN(pid)) {
           try {
-            process.kill(parseInt(pid, 10), 'SIGKILL');
-            console.log(`[CLEAN-PORTS] Freed port ${port} (Killed PID ${pid})`);
-          } catch {}
+            // Only kill if not PID of current process
+            if (parseInt(pid, 10) !== process.pid) {
+              process.kill(parseInt(pid, 10), 'SIGKILL');
+              console.log(`[CLEAN-PORTS] Freed port ${port} (Killed PID ${pid})`);
+            }
+          } catch (e) {
+            // Docker or protected system process, safe to ignore
+          }
         }
       });
     }

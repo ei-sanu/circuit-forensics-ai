@@ -60,6 +60,7 @@ app.include_router(copilot_router)
 app.include_router(face_router)
 
 
+@app.get("/health", tags=["Health"])
 @app.get("/ml/health", tags=["Health"])
 async def health_check():
     """Unauthenticated health check endpoint for container orchestrators and gateways."""

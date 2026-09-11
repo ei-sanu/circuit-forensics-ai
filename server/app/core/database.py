@@ -48,10 +48,25 @@ def get_engine_url() -> tuple[str, dict]:
 
 async def connect_to_database():
     """Connect to PostgreSQL (Supabase / local) and create all tables."""
+    if getattr(settings, 'offline_mode', False):
+        logger.info("OFFLINE_MODE enabled: directly initializing local zero-latency SQLite engine...")
+        fallback_url = "sqlite+aiosqlite:///./circuit.db"
+        db_manager.engine = create_async_engine(fallback_url, echo=False)
+        db_manager.session_maker = async_sessionmaker(
+            db_manager.engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+        async with db_manager.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Local Offline Database initialized & verified.")
+        return
+
     db_url, connect_args = get_engine_url()
     try:
         masked_url = db_url.split('@')[-1] if '@' in db_url else db_url
         logger.info(f"Connecting to PostgreSQL Database at {masked_url}...")
+        connect_args["timeout"] = 4
         db_manager.engine = create_async_engine(
             db_url,
             echo=False,
@@ -59,7 +74,7 @@ async def connect_to_database():
             pool_recycle=600,
             pool_size=15,
             max_overflow=25,
-            pool_timeout=15,
+            pool_timeout=4,
             connect_args=connect_args,
         )
         db_manager.session_maker = async_sessionmaker(
