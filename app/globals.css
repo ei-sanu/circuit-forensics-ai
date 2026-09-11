@@ -223,3 +223,20 @@ nextjs-portal,
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* Fluid page entrance transition */
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, Sparkles, Filter } from 'lucide-react';
 
@@ -36,13 +37,14 @@ export function Topbar({ onSearch, activeCase, onCaseChange }: TopbarProps) {
 
       <div className="flex items-center gap-3">
         {/* Live Map Quick Link */}
-        <a
+        <Link
           href="/locations"
+          prefetch={true}
           className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-charcoal-800 text-xs font-bold shadow-sm transition"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
           <span>Live Map</span>
-        </a>
+        </Link>
 
         {/* Case Context Indicator */}
         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-xs shadow-sm">

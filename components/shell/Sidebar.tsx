@@ -25,6 +25,7 @@ import {
   Car,
   Sparkles,
   Layers,
+  Loader2,
 } from 'lucide-react';
 import { getCurrentUser, removeAuthToken, AuthUser } from '@/lib/auth';
 import { api } from '@/lib/api';
@@ -34,6 +35,23 @@ export function Sidebar() {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [openAlertsCount, setOpenAlertsCount] = useState<number>(0);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  // Clear pending state when navigation completes
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
+  const handleNavClick = (href: string, label: string) => {
+    if (pathname !== href) {
+      setPendingHref(href);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('circuit-nav-start', { detail: { href, label } })
+        );
+      }
+    }
+  };
 
   useEffect(() => {
     setUser(getCurrentUser());
@@ -141,32 +159,52 @@ export function Sidebar() {
         <nav className="p-2.5 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isPending = pendingHref === item.href;
             const isActive =
               pathname === item.href ||
               (item.href !== '/dashboard' && pathname.startsWith(item.href));
+
             return (
               <Link
                 key={item.label + item.href}
                 href={item.href}
-                className={`flex items-center justify-between px-3.5 py-2 rounded-2xl text-xs font-semibold transition-all ${
+                prefetch={true}
+                onClick={() => handleNavClick(item.href, item.label)}
+                className={`group flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-150 relative active:scale-[0.98] ${
                   isActive
-                    ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
+                    ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                    : isPending
+                    ? 'bg-sky-950/80 text-sky-200 border border-sky-500/50 shadow-sm animate-pulse'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
+                  {isPending ? (
+                    <Loader2 className="w-4 h-4 text-sky-400 animate-spin shrink-0" />
+                  ) : (
+                    <Icon
+                      className={`w-4 h-4 transition-transform duration-150 group-hover:scale-110 shrink-0 ${
+                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
+                      }`}
+                    />
+                  )}
+                  <span className="truncate">{item.label}</span>
                 </div>
-                {item.badge !== undefined && (
-                  <span
-                    className={`text-[10px] font-mono px-2 py-0.2 rounded-full font-bold ${
-                      isActive ? 'bg-white text-sky-700' : 'bg-red-500 text-white shadow-sm'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
+
+                <div className="flex items-center gap-1.5">
+                  {isPending && (
+                    <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+                  )}
+                  {item.badge !== undefined && (
+                    <span
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                        isActive ? 'bg-white text-sky-700' : 'bg-red-500 text-white shadow-sm'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
               </Link>
             );
           })}
