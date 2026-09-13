@@ -166,23 +166,23 @@
 
 ### **Q1: "Your graph uses NetworkX in Python. NetworkX runs in RAM. How will this scale to 50 million bank transactions from the SBI core banking database?"**
 > **Winning Answer**:
-> *"That is an insightful architectural point. In enterprise intelligence architecture, you have two tiers: the **Cold Graph Warehouse** and the **Active Investigative Subgraph Scratchpad**. 
-> NetworkX is intentionally employed here as the **in-memory localized investigative scratchpad**—running subgraphs of 5,000 to 100,000 entities in < 30 milliseconds with microsecond graph manipulation during live interrogations. 
+> *"That is an insightful architectural point. In enterprise intelligence architecture, you have two tiers: the **Cold Graph Warehouse** and the **Active Investigative Subgraph Scratchpad**.
+> NetworkX is intentionally employed here as the **in-memory localized investigative scratchpad**—running subgraphs of 5,000 to 100,000 entities in < 30 milliseconds with microsecond graph manipulation during live interrogations.
 > Because our backend is fully decoupled via SQLAlchemy and Pydantic schemas, the underlying persistent relational tables seamlessly mirror to a distributed graph engine like Neo4j or Apache HugeGraph for petabyte-scale distributed batch querying, while NetworkX delivers the real-time responsive analytics on the officer's active case canvas."*
 
 ---
 
 ### **Q2: "What happens if a police station in a remote district has no internet or the hackathon venue Wi-Fi goes down during your demo?"**
 > **Winning Answer**:
-> *"CIRCUIT was engineered from Day 1 with an **Offline-First Resilience Architecture**. 
-> In `app.core.database`, we implemented an automated dual-driver strategy: while our production mode connects to a high-speed cloud PostgreSQL cluster with pooled TLS 1.3, the system features an instant zero-latency SQLite fallback (`circuit.db`) that initializes all schemas locally within 0 milliseconds if remote pings fail. 
+> *"CIRCUIT was engineered from Day 1 with an **Offline-First Resilience Architecture**.
+> In `app.core.database`, we implemented an automated dual-driver strategy: while our production mode connects to a high-speed cloud PostgreSQL cluster with pooled TLS 1.3, the system features an instant zero-latency SQLite fallback (`circuit.db`) that initializes all schemas locally within 0 milliseconds if remote pings fail.
 > We also provide an `OFFLINE_MODE=true` environment toggle. The entire suite—FastAPI, ML Engine, and Next.js—can run 100% air-gapped on a single field laptop inside a police vehicle with zero internet connection."*
 
 ---
 
 ### **Q3: "Police FIRs in India are written in colloquial language, Hindi, or Hinglish. How does your system handle non-standard text?"**
 > **Winning Answer**:
-> *"We specifically rejected generic Western NER models because they fail on Indian names without titles and cannot parse Indian financial terminology. 
+> *"We specifically rejected generic Western NER models because they fail on Indian names without titles and cannot parse Indian financial terminology.
 > CIRCUIT uses a multi-tier hybrid extraction pipeline tailored for Indian law enforcement:
 > 1. Deterministic statutory gazetteers for Indian RTO vehicle plates (all 36 States/UTs from DL to AN), 10-digit Indian mobile prefixes, 12-digit Aadhaar formats, 10-character alphanumeric PAN numbers, and UPI VPA handles.
 > 2. Vernacular phrase parsing trained on Indian police phrasing: detecting currency in Lakhs and Crores, informal Hawala keywords ('angadiya', 'khatabook', 'diya', 'bheja'), and Indian kinship/surname patterns across major regions.
@@ -192,6 +192,6 @@
 
 ### **Q4: "How does your system prevent fake evidence or rogue officers from tampering with suspect profiles?"**
 > **Winning Answer**:
-> *"Every single read, mutation, export, and biometric authentication attempt is intercepted by our audit logging middleware (`app.services.audit_service`). 
-> Mutations are cryptographically recorded in an append-only PostgreSQL table with the officer's User ID, official email, role, client IP address, action code, and state diff. 
+> *"Every single read, mutation, export, and biometric authentication attempt is intercepted by our audit logging middleware (`app.services.audit_service`).
+> Mutations are cryptographically recorded in an append-only PostgreSQL table with the officer's User ID, official email, role, client IP address, action code, and state diff.
 > When case files are exported under Section 63 of the Bharatiya Sakshya Adhiniyam, the system embeds an immutable cryptographic audit signature certifying the unbroken chain of custody for courtroom presentation."*

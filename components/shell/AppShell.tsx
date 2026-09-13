@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         <NavigationProgressBar />
-        <main className="w-full min-h-screen animate-page-enter">{children}</main>
+        <main className="w-full min-h-screen">{children}</main>
       </>
     );
   }

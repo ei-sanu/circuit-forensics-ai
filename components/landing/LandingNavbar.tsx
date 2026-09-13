@@ -9,10 +9,6 @@ import {
   User,
   LogOut,
   LayoutDashboard,
-  Shield,
-  UserPlus,
-  Compass,
-  Network,
 } from 'lucide-react';
 import { getCurrentUser, removeAuthToken, AuthUser } from '@/lib/auth';
 
@@ -75,26 +71,6 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
             </span>
           </div>
         </Link>
-
-        {/* Center Navigation Links */}
-        <div className="hidden md:flex items-center gap-6 text-xs font-semibold text-charcoal-600">
-          <a href="#capabilities" className="hover:text-charcoal-950 transition-colors">
-            Capabilities
-          </a>
-          <a href="#how-it-works" className="hover:text-charcoal-950 transition-colors">
-            Architecture
-          </a>
-          <a href="#roles" className="hover:text-charcoal-950 transition-colors">
-            Role Consoles
-          </a>
-          <a href="#security" className="hover:text-charcoal-950 transition-colors">
-            Security & Trust
-          </a>
-          <Link href="/explorer" className="hover:text-charcoal-950 transition-colors flex items-center gap-1">
-            <Network className="w-3.5 h-3.5 text-sky-600" />
-            <span>Neural Graph</span>
-          </Link>
-        </div>
 
         {/* Right Dynamic Auth State Controls */}
         <div className="flex items-center gap-2.5 text-xs font-semibold">
