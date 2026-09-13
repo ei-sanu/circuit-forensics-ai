@@ -26,9 +26,32 @@ import {
   Sparkles,
   Layers,
   Loader2,
+  ChevronDown,
+  ChevronRight,
+  ChevronLeft,
+  Radio,
+  Sliders,
+  FolderGit2,
+  Radar,
+  BrainCircuit,
+  FileStack,
 } from 'lucide-react';
 import { getCurrentUser, removeAuthToken, AuthUser } from '@/lib/auth';
 import { api } from '@/lib/api';
+
+interface NavSubItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: number;
+}
+
+interface NavCategory {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  items: NavSubItem[];
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -37,10 +60,26 @@ export function Sidebar() {
   const [openAlertsCount, setOpenAlertsCount] = useState<number>(0);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
+  // Collapsible categories state (Default: General and Active category open)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    general: true,
+    investigation: true,
+    surveillance: false,
+    ai: true,
+    system: false,
+  });
+
   // Clear pending state when navigation completes
   useEffect(() => {
     setPendingHref(null);
   }, [pathname]);
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
 
   const handleNavClick = (href: string, label: string) => {
     if (pathname !== href) {
@@ -50,6 +89,14 @@ export function Sidebar() {
           new CustomEvent('circuit-nav-start', { detail: { href, label } })
         );
       }
+    }
+  };
+
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/dashboard');
     }
   };
 
@@ -70,7 +117,6 @@ export function Sidebar() {
 
     fetchLiveAlertsCount();
 
-    // Listen to live FIR match events to refresh count immediately
     const handleLiveAlert = () => {
       fetchLiveAlertsCount();
     };
@@ -89,150 +135,283 @@ export function Sidebar() {
     router.push('/');
   };
 
-  const navItems = useMemo(() => {
+  // Structured Categorized Navigation
+  const navCategories: NavCategory[] = useMemo(() => {
     const role = user?.role;
 
     if (role === 'hr') {
       return [
-        { label: 'HR Onboarding', href: '/hr', icon: UserPlus },
-        { label: 'Staff Directory', href: '/hr', icon: Users },
-        { label: 'Settings', href: '/settings', icon: Settings },
+        {
+          id: 'general',
+          label: 'General',
+          icon: LayoutDashboard,
+          items: [
+            { label: 'HR Onboarding', href: '/hr', icon: UserPlus },
+            { label: 'Staff Directory', href: '/hr', icon: Users },
+          ],
+        },
+        {
+          id: 'system',
+          label: 'System',
+          icon: Settings,
+          items: [
+            { label: 'Settings', href: '/settings', icon: Settings },
+          ],
+        },
       ];
     }
 
     if (role === 'police_station') {
       return [
-        { label: 'Station Dashboard', href: '/police', icon: Shield },
-        { label: 'File Official FIR', href: '/police', icon: FileText },
-        { label: 'FIR Track & Registry', href: '/fir-track', icon: FileCheck },
-        { label: 'Jurisdiction Map', href: '/locations', icon: Compass },
-        { label: 'Vehicle Intel', href: '/vehicles', icon: Car },
-        { label: 'Alerts', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
-        { label: 'Settings', href: '/settings', icon: Settings },
+        {
+          id: 'general',
+          label: 'Station Operations',
+          icon: Shield,
+          items: [
+            { label: 'Station Dashboard', href: '/police', icon: Shield },
+            { label: 'File Official FIR', href: '/police', icon: FileText },
+            { label: 'Alerts', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
+          ],
+        },
+        {
+          id: 'investigation',
+          label: 'Case Intelligence',
+          icon: FolderGit2,
+          items: [
+            { label: 'FIR Track & Registry', href: '/fir-track', icon: FileCheck },
+            { label: 'Jurisdiction Map', href: '/locations', icon: Compass },
+            { label: 'Vehicle Intel', href: '/vehicles', icon: Car },
+          ],
+        },
+        {
+          id: 'system',
+          label: 'System & Security',
+          icon: Settings,
+          items: [
+            { label: 'Settings', href: '/settings', icon: Settings },
+          ],
+        },
       ];
     }
 
     // Default: Admin, Investigator, Analyst
-    const items = [
-      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { label: 'Network Explorer', href: '/explorer', icon: Network },
-      { label: 'Entities', href: '/entities', icon: Users },
-      { label: 'FIR Track', href: '/fir-track', icon: FileCheck },
-      { label: 'Investigations', href: '/cases', icon: Briefcase },
-      { label: 'Alerts', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
-      { label: 'Transactions', href: '/transactions', icon: Landmark },
-      { label: 'Communications', href: '/communications', icon: Phone },
-      { label: 'Vehicle Intel', href: '/vehicles', icon: Car },
-      { label: 'Geo Intelligence', href: '/locations', icon: MapPin },
-      { label: 'AI Intelligence Lab', href: '/intelligence-lab', icon: Sparkles },
-      { label: 'AI Copilot', href: '/copilot', icon: Bot },
-      { label: 'Reports', href: '/reports', icon: FileSpreadsheet },
-      { label: 'Settings', href: '/settings', icon: Settings },
+    const categories: NavCategory[] = [
+      {
+        id: 'general',
+        label: 'General',
+        icon: LayoutDashboard,
+        items: [
+          { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+          { label: 'Alerts & Threats', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
+        ],
+      },
+      {
+        id: 'investigation',
+        label: 'Investigation',
+        icon: FolderGit2,
+        items: [
+          { label: 'Network Explorer', href: '/explorer', icon: Network },
+          { label: 'Entity Registry', href: '/entities', icon: Users },
+          { label: 'Active Cases', href: '/cases', icon: Briefcase },
+          { label: 'FIR Track', href: '/fir-track', icon: FileCheck },
+        ],
+      },
+      {
+        id: 'surveillance',
+        label: 'Surveillance & Intel',
+        icon: Radar,
+        items: [
+          { label: 'Geo Intelligence', href: '/locations', icon: MapPin },
+          { label: 'Vehicle Intel', href: '/vehicles', icon: Car },
+          { label: 'Communications CDR', href: '/communications', icon: Phone },
+          { label: 'Transactions & Hawala', href: '/transactions', icon: Landmark },
+        ],
+      },
+      {
+        id: 'ai',
+        label: 'AI Analytics',
+        icon: BrainCircuit,
+        items: [
+          { label: 'AI Copilot', href: '/copilot', icon: Bot },
+          { label: 'Intelligence Lab', href: '/intelligence-lab', icon: Sparkles },
+        ],
+      },
+      {
+        id: 'system',
+        label: 'System & Reports',
+        icon: FileStack,
+        items: [
+          { label: 'Reports & Dossiers', href: '/reports', icon: FileSpreadsheet },
+          ...(role === 'admin' ? [{ label: 'HR Approvals', href: '/settings?tab=users', icon: UserPlus }] : []),
+          { label: 'Settings', href: '/settings', icon: Settings },
+        ],
+      },
     ];
 
-    if (role === 'admin') {
-      items.splice(items.length - 1, 0, { label: 'HR Onboarding', href: '/hr', icon: UserPlus });
-    }
-
-    return items;
+    return categories;
   }, [user, openAlertsCount]);
+
+  // Auto-expand category if active page belongs to it
+  useEffect(() => {
+    navCategories.forEach((cat) => {
+      const hasActive = cat.items.some(
+        (item) => pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+      );
+      if (hasActive && !expandedGroups[cat.id]) {
+        setExpandedGroups((prev) => ({ ...prev, [cat.id]: true }));
+      }
+    });
+  }, [pathname, navCategories]);
 
   if (pathname === '/' || pathname === '/login') return null;
 
   return (
-    <aside className="w-64 bg-charcoal-950/95 border-r border-slate-800 flex flex-col justify-between shrink-0 h-screen sticky top-0 backdrop-blur-2xl text-slate-100 z-30 overflow-y-auto">
+    <aside className="w-64 bg-[#f8f9fa] dark:bg-[#080c14] border-r border-neutral-200/80 dark:border-slate-800/80 flex flex-col justify-between shrink-0 h-screen sticky top-0 backdrop-blur-2xl text-neutral-800 dark:text-neutral-200 z-30 overflow-y-auto transition-colors duration-200 select-none">
       <div>
-        {/* Brand Header */}
-        <Link href="/" className="p-4 border-b border-slate-800 flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-full bg-sky-600 flex items-center justify-center text-white font-bold shadow-md shadow-sky-600/30 group-hover:scale-105 transition-transform">
-            <ShieldAlert className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="font-extrabold text-base text-white tracking-wider">
-              CIRCUIT<span className="text-sky-400 font-normal italic ml-0.5">AI</span>
-            </h1>
-            <p className="text-[9px] text-slate-400 font-mono tracking-tight uppercase">Network Intelligence</p>
-          </div>
-        </Link>
+        {/* Top Header with "< Back" Button and Brand */}
+        <div className="p-4 border-b border-neutral-200/60 dark:border-slate-800/60 space-y-3">
+          {/* Sleek < Back Pill Button */}
+          <button
+            onClick={handleBack}
+            className="px-3.5 py-1.5 rounded-full border border-neutral-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-200 text-xs font-semibold shadow-xs hover:bg-neutral-100 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Back</span>
+          </button>
 
-        {/* Navigation Items */}
-        <nav className="p-2.5 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isPending = pendingHref === item.href;
-            const isActive =
-              pathname === item.href ||
-              (item.href !== '/dashboard' && pathname.startsWith(item.href));
+          {/* Brand Logo & Title */}
+          <Link href="/dashboard" className="flex items-center gap-2.5 group pt-1">
+            <div className="w-8 h-8 rounded-xl bg-blue-600 dark:bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <ShieldAlert className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm text-neutral-900 dark:text-white tracking-tight flex items-center">
+                CIRCUIT<span className="text-blue-600 dark:text-blue-400 font-semibold italic ml-0.5">2.0</span>
+              </h1>
+              <p className="text-[9px] text-neutral-400 dark:text-neutral-500 font-mono tracking-wider uppercase">
+                Intelligence Platform
+              </p>
+            </div>
+          </Link>
+        </div>
+
+        {/* Structured Categorized Navigation */}
+        <nav className="p-3 space-y-2">
+          {navCategories.map((category) => {
+            const CatIcon = category.icon;
+            const isExpanded = expandedGroups[category.id] ?? true;
 
             return (
-              <Link
-                key={item.label + item.href}
-                href={item.href}
-                prefetch={true}
-                onClick={() => handleNavClick(item.href, item.label)}
-                className={`group flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-150 relative active:scale-[0.98] ${
-                  isActive
-                    ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
-                    : isPending
-                    ? 'bg-sky-950/80 text-sky-200 border border-sky-500/50 shadow-sm animate-pulse'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {isPending ? (
-                    <Loader2 className="w-4 h-4 text-sky-400 animate-spin shrink-0" />
+              <div key={category.id} className="space-y-0.5">
+                {/* Category Accordion Header */}
+                <button
+                  onClick={() => toggleGroup(category.id)}
+                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/40 dark:hover:bg-slate-800/40 transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <CatIcon className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
+                    <span>{category.label}</span>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
                   ) : (
-                    <Icon
-                      className={`w-4 h-4 transition-transform duration-150 group-hover:scale-110 shrink-0 ${
-                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
-                      }`}
-                    />
+                    <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
                   )}
-                  <span className="truncate">{item.label}</span>
-                </div>
+                </button>
 
-                <div className="flex items-center gap-1.5">
-                  {isPending && (
-                    <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
-                  )}
-                  {item.badge !== undefined && (
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
-                        isActive ? 'bg-white text-sky-700' : 'bg-red-500 text-white shadow-sm'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
-              </Link>
+                {/* Sub-Items List */}
+                {isExpanded && (
+                  <div className="space-y-0.5 pt-0.5 pl-1">
+                    {category.items.map((item) => {
+                      const Icon = item.icon;
+                      const isPending = pendingHref === item.href;
+                      const isActive =
+                        pathname === item.href ||
+                        (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')) ||
+                        (pathname === '/settings' && item.href === '/settings');
+
+                      return (
+                        <Link
+                          key={item.label + item.href}
+                          href={item.href}
+                          prefetch={true}
+                          onClick={() => handleNavClick(item.href, item.label)}
+                          className={`group flex items-center justify-between px-3 py-2 rounded-2xl text-xs transition-all duration-150 relative active:scale-[0.98] ${
+                            isActive
+                              ? 'bg-white dark:bg-slate-800 text-neutral-900 dark:text-white shadow-xs border border-neutral-200/90 dark:border-slate-700 font-semibold'
+                              : isPending
+                              ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 animate-pulse font-medium'
+                              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/40 dark:hover:bg-slate-800/40 font-medium'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            {isPending ? (
+                              <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin shrink-0" />
+                            ) : (
+                              <Icon
+                                className={`w-3.5 h-3.5 transition-transform duration-150 group-hover:scale-110 shrink-0 ${
+                                  isActive
+                                    ? 'text-blue-600 dark:text-blue-400'
+                                    : 'text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-700 dark:group-hover:text-neutral-200'
+                                }`}
+                              />
+                            )}
+                            <span className="truncate">{item.label}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            {isPending && (
+                              <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                            )}
+                            {item.badge !== undefined && (
+                              <span
+                                className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                                  isActive
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-red-500 text-white shadow-xs'
+                                }`}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
       </div>
 
       {/* User Footer & Synthetic Demo Disclaimer */}
-      <div className="p-3 border-t border-slate-800 bg-charcoal-900/70 space-y-2">
+      <div className="p-3 border-t border-neutral-200/60 dark:border-slate-800/60 bg-neutral-100/60 dark:bg-[#070a11]/80 space-y-2">
         {/* Demo Disclaimer */}
-        <div className="p-2 rounded-xl bg-charcoal-950 border border-amber-500/20 text-[9px] text-amber-300/80 font-mono leading-tight">
-          <strong className="text-amber-200 uppercase">SYNTHETIC DEMO:</strong> All data is fictional. Indicators are not proof of guilt.
+        <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-500/20 text-[9px] text-amber-600 dark:text-amber-400 font-mono leading-tight">
+          <strong className="uppercase">SYNTHETIC DEMO:</strong> Real-time graph intelligence simulation.
         </div>
 
         {/* User Card */}
-        <div className="flex items-center justify-between p-1.5 rounded-xl bg-charcoal-950/60 border border-slate-800">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-7 h-7 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-extrabold shrink-0">
-              {user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'IM'}
+        <div className="flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-slate-900 border border-neutral-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-[11px] font-bold shadow-xs shrink-0">
+              {user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'CO'}
             </div>
             <div className="truncate">
-              <p className="text-xs font-bold text-slate-100 truncate">{user?.name || 'Lead Officer'}</p>
-              <p className="text-[9px] text-slate-400 uppercase font-mono">{user?.role?.replace('_', ' ') || 'Investigator'}</p>
+              <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                {user?.name || 'Command Officer'}
+              </p>
+              <p className="text-[9px] text-neutral-400 dark:text-neutral-500 uppercase font-mono">
+                {user?.role?.replace('_', ' ') || 'Investigator'}
+              </p>
             </div>
           </div>
           <button
             onClick={handleLogout}
             title="Log out"
-            className="p-1 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition cursor-pointer"
+            className="p-1.5 rounded-xl text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-slate-800 transition cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
           </button>

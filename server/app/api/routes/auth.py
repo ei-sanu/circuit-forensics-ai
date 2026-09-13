@@ -3,8 +3,12 @@ from fastapi import APIRouter, Depends, Request, status
 from app.core.permissions import get_current_user, require_roles, Role
 from app.services.auth_service import auth_service
 from app.schemas.auth import LoginDto, DemoLoginDto, RegisterDto
+from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+class RefreshTokenDto(BaseModel):
+    refreshToken: str = Field(..., description="Valid 7-day JWT refresh token")
 
 @router.post("/login", summary="Login and obtain JWT token or biometric challenge")
 async def login(dto: LoginDto, request: Request):
@@ -17,6 +21,10 @@ async def demo_login(dto: DemoLoginDto, request: Request):
     ip = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
     return await auth_service.demo_login(dto.role, ip=ip, user_agent=user_agent)
+
+@router.post("/refresh", summary="Rotate and refresh active JWT session tokens")
+async def refresh_token(dto: RefreshTokenDto):
+    return await auth_service.refresh_session(dto.refreshToken)
 
 @router.post("/register", summary="Register a new user account")
 async def register(dto: RegisterDto, request: Request):

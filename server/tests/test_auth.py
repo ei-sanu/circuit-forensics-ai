@@ -5,8 +5,23 @@ def test_demo_login_investigator(client):
     assert response.status_code == 200
     data = response.json()
     assert "accessToken" in data
+    assert "refreshToken" in data
     assert data["user"]["role"] == "investigator"
     assert data["user"]["email"] == "investigator@circuit.gov"
+
+def test_refresh_token_flow(client):
+    # 1. Login and get refresh token
+    login_res = client.post("/api/auth/demo-login", json={"role": "analyst"})
+    assert login_res.status_code == 200
+    refresh_tok = login_res.json()["refreshToken"]
+
+    # 2. Refresh session
+    refresh_res = client.post("/api/auth/refresh", json={"refreshToken": refresh_tok})
+    assert refresh_res.status_code == 200
+    data = refresh_res.json()
+    assert "accessToken" in data
+    assert "refreshToken" in data
+    assert data["user"]["role"] == "analyst"
 
 def test_demo_login_admin(client):
     response = client.post("/api/auth/demo-login", json={"role": "admin"})

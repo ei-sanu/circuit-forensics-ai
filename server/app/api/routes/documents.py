@@ -35,3 +35,11 @@ async def commit_document(
     user: Dict[str, Any] = Depends(require_roles(Role.INVESTIGATOR, Role.ADMIN, Role.POLICE_STATION)),
 ):
     return await document_service.commit(document_id, dto, user=user)
+
+@router.get("/{document_id}/verify-hash", summary="Cryptographic SHA-256 evidence integrity check")
+async def verify_document_hash(
+    document_id: str,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    return await document_service.verify_hash(document_id)
+

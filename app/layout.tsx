@@ -1,6 +1,7 @@
 import React from 'react';
 import './globals.css';
 import { AppShell } from '@/components/shell/AppShell';
+import { ThemeProvider } from '@/lib/theme';
 
 export const metadata = {
   title: 'CIRCUIT — Criminal Intelligence & Investigation Platform',
@@ -9,11 +10,24 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              try {
+                const savedTheme = localStorage.getItem('circuit_theme') || 'system';
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = savedTheme === 'dark' || (savedTheme === 'system' && prefersDark);
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.classList.remove('light');
+                } else {
+                  document.documentElement.classList.add('light');
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+
               window.addEventListener('error', function(e) {
                 if (e && e.message && (e.message.includes('fetch') || e.message.includes('Network') || e.message.includes('Failed to load') || e.message.includes('HTTP Error'))) {
                   e.preventDefault();
@@ -30,8 +44,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-brand-500 selection:text-white">
-        <AppShell>{children}</AppShell>
+      <body className="bg-[#f8f9fa] dark:bg-[#090d16] text-neutral-900 dark:text-neutral-100 min-h-screen antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200">
+        <ThemeProvider>
+          <AppShell>{children}</AppShell>
+        </ThemeProvider>
       </body>
     </html>
   );

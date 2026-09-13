@@ -8,11 +8,11 @@ from app.services.vehicle_service import vehicle_service
 router = APIRouter(prefix="/vehicles", tags=["Vehicles & ANPR Tracking"])
 
 class CreateVehicleDto(BaseModel):
-    plateNumber: str = Field(..., example="MH-01-EA-9021")
-    makeModel: str = Field(..., example="Toyota Fortuner Legender")
-    vehicleType: str = Field(default="suv", example="suv")
-    ownerName: Optional[str] = Field(default="Unknown", example="Vikram Rathore")
-    ownerDesignation: Optional[str] = Field(default="Suspect", example="Primary Syndicate Coordinator")
+    plateNumber: str = Field(..., json_schema_extra={"example": "MH-01-EA-9021"})
+    makeModel: str = Field(..., json_schema_extra={"example": "Toyota Fortuner Legender"})
+    vehicleType: str = Field(default="suv", json_schema_extra={"example": "suv"})
+    ownerName: Optional[str] = Field(default="Unknown", json_schema_extra={"example": "Vikram Rathore"})
+    ownerDesignation: Optional[str] = Field(default="Suspect", json_schema_extra={"example": "Primary Syndicate Coordinator"})
     riskFlag: bool = Field(default=True)
     chassisNumber: Optional[str] = None
     fastagId: Optional[str] = None
@@ -20,7 +20,7 @@ class CreateVehicleDto(BaseModel):
     lastSeenLocation: Optional[str] = None
 
 class ScanPlateDto(BaseModel):
-    plateNumber: str = Field(..., example="MH-01-EA-9021")
+    plateNumber: str = Field(..., json_schema_extra={"example": "MH-01-EA-9021"})
 
 @router.get("", summary="List all intelligence vehicles with RTO and risk filtering")
 async def list_vehicles(

@@ -6,10 +6,32 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
+        brand: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+          950: '#172554',
+        },
+        surface: {
+          light: '#f8f9fa',
+          'card-light': '#ffffff',
+          'border-light': '#e5e7eb',
+          dark: '#090d16',
+          'card-dark': '#111827',
+          'border-dark': '#1f2937',
+        },
         // Crisp Luxury White & Deep Charcoal Palette
         canvas: '#ffffff',
         beige: {
@@ -26,7 +48,13 @@ module.exports = {
           850: '#232a31',
         },
         charcoal: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
           500: '#52595f',
+          600: '#475569',
           700: '#334155',
           800: '#1e293b',
           850: '#0f172a',

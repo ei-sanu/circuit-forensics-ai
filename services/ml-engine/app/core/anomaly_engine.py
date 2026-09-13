@@ -39,6 +39,7 @@ class AnomalyEngine:
             "shared_contact_info": self.detect_shared_contact_info,
             "bridge_connector": self.detect_bridge_connectors,
             "high_risk_repetition": self.detect_high_risk_repetition,
+            "structuring_smurfing": self.detect_structuring_smurfing,
         }
 
         for name, func in detectors.items():
@@ -331,3 +332,101 @@ class AnomalyEngine:
                     methodology="Tracks repeated interactions between unflagged entities and high-risk flagged suspects."
                 ))
         return alerts
+
+    # 10. Structuring / Smurfing (Sub-Threshold CTR / PAN Evasion)
+    def detect_structuring_smurfing(
+        self,
+        sub_threshold_min: float = 35000.0,
+        sub_threshold_max: float = 49999.0,
+        aggregate_threshold: float = 100000.0
+    ) -> List[AnomalyAlert]:
+        alerts = []
+        
+        # Group transactions by sender and receiver
+        sender_txns: Dict[str, List[TransactionRecord]] = defaultdict(list)
+        receiver_txns: Dict[str, List[TransactionRecord]] = defaultdict(list)
+        pair_txns: Dict[Tuple[str, str], List[TransactionRecord]] = defaultdict(list)
+
+        for txn in self.transactions:
+            if sub_threshold_min <= txn.amount <= sub_threshold_max or (txn.amount < 50000.0 and txn.amount >= 20000.0):
+                sender_txns[txn.from_id].append(txn)
+                receiver_txns[txn.to_id].append(txn)
+                pair_txns[(txn.from_id, txn.to_id)].append(txn)
+
+        # A. Pairwise Structuring (Repetitive sub-threshold payments between same parties)
+        for (src, dst), tx_list in pair_txns.items():
+            if len(tx_list) >= 3:
+                total_amt = sum(t.amount for t in tx_list)
+                if total_amt >= aggregate_threshold or len(tx_list) >= 4:
+                    src_label = self.nodes.get(src, EntityNode(id=src, label=src, entity_type="entity")).label
+                    dst_label = self.nodes.get(dst, EntityNode(id=dst, label=dst, entity_type="entity")).label
+                    alerts.append(AnomalyAlert(
+                        id=f"alt_smurf_pair_{src}_{dst}",
+                        detector_name="structuring_smurfing",
+                        severity="critical" if total_amt >= 200000.0 else "high",
+                        title=f"Sub-Threshold Structuring Pattern: {src_label} → {dst_label}",
+                        explanation=(
+                            f"Detected {len(tx_list)} repetitive transfers just below the ₹50,000 regulatory reporting threshold "
+                            f"(totaling ₹{total_amt:,.2f}) between {src_label} and {dst_label} indicative of deliberate structuring."
+                        ),
+                        confidence=0.94,
+                        entities=[
+                            {"id": src, "label": src_label},
+                            {"id": dst, "label": dst_label}
+                        ],
+                        evidence_ids=[t.id for t in tx_list],
+                        methodology="Identifies repetitive transactions situated just under mandatory KYC/PAN statutory thresholds (₹50,000)."
+                    ))
+
+        # B. Fan-In Smurfing (Many small senders funneling into one central beneficiary)
+        for beneficiary, tx_list in receiver_txns.items():
+            senders = {t.from_id for t in tx_list}
+            if len(senders) >= 3:
+                total_amt = sum(t.amount for t in tx_list)
+                if total_amt >= aggregate_threshold:
+                    ben_label = self.nodes.get(beneficiary, EntityNode(id=beneficiary, label=beneficiary, entity_type="entity")).label
+                    alerts.append(AnomalyAlert(
+                        id=f"alt_smurf_fanin_{beneficiary}",
+                        detector_name="structuring_smurfing",
+                        severity="critical",
+                        title=f"Fan-In Smurfing Funnel: {ben_label}",
+                        explanation=(
+                            f"Beneficiary '{ben_label}' received {len(tx_list)} sub-threshold deposits totaling ₹{total_amt:,.2f} "
+                            f"from {len(senders)} separate sources within a coordinated deposit window."
+                        ),
+                        confidence=0.95,
+                        entities=[{"id": beneficiary, "label": ben_label}] + [
+                            {"id": s, "label": self.nodes.get(s, EntityNode(id=s, label=s, entity_type="entity")).label}
+                            for s in list(senders)[:5]
+                        ],
+                        evidence_ids=[t.id for t in tx_list],
+                        methodology="Detects fan-in multi-source sub-threshold fund aggregation."
+                    ))
+
+        # C. Fan-Out Smurfing (Single source dispersing multiple sub-threshold payments)
+        for sender, tx_list in sender_txns.items():
+            receivers = {t.to_id for t in tx_list}
+            if len(receivers) >= 3:
+                total_amt = sum(t.amount for t in tx_list)
+                if total_amt >= aggregate_threshold:
+                    src_label = self.nodes.get(sender, EntityNode(id=sender, label=sender, entity_type="entity")).label
+                    alerts.append(AnomalyAlert(
+                        id=f"alt_smurf_fanout_{sender}",
+                        detector_name="structuring_smurfing",
+                        severity="high",
+                        title=f"Fan-Out Smurfing Dispersal: {src_label}",
+                        explanation=(
+                            f"Entity '{src_label}' dispersed {len(tx_list)} sub-threshold amounts totaling ₹{total_amt:,.2f} "
+                            f"across {len(receivers)} distinct recipients."
+                        ),
+                        confidence=0.92,
+                        entities=[{"id": sender, "label": src_label}] + [
+                            {"id": r, "label": self.nodes.get(r, EntityNode(id=r, label=r, entity_type="entity")).label}
+                            for r in list(receivers)[:5]
+                        ],
+                        evidence_ids=[t.id for t in tx_list],
+                        methodology="Detects single-origin sub-threshold dispersal across multiple recipient accounts."
+                    ))
+
+        return alerts
+

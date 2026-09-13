@@ -16,7 +16,7 @@ logger = logging.getLogger("CIRCUIT.IntelligenceLabRouter")
 router = APIRouter(prefix="/intelligence-lab", tags=["Intelligence Lab Simulations"])
 
 class BreakpointRequest(BaseModel):
-    removedNodeIds: List[str] = Field(..., example=["P-0001", "P-0007"])
+    removedNodeIds: List[str] = Field(..., json_schema_extra={"example": ["P-0001", "P-0007"]})
 
 @router.get("/evolution", summary="Temporal evolution of graph topology over investigative weeks")
 async def get_simulation_evolution(

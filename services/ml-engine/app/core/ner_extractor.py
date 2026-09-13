@@ -37,6 +37,11 @@ PAN_REGEX = re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")
 AADHAAR_REGEX = re.compile(r"\b[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}\b")
 UPI_REGEX = re.compile(r"\b[a-zA-Z0-9_\.\-]+@(okhdfcbank|okaxis|oksbi|okicici|paytm|ybl|ibl|upi|axl|apl|barodampay|waaxis)\b", re.IGNORECASE)
 IFSC_REGEX = re.compile(r"\b[A-Z]{4}0[A-Z0-9]{6}\b")
+BANK_ACC_REGEX = re.compile(r"\b(?:A\/C|Account|Acc|Khata)[\s#.:-]*([0-9]{9,18})\b", re.IGNORECASE)
+LEGAL_SECTION_REGEX = re.compile(
+    r"\b(?:(?:u\/s|under\s+section|sec\.?|section)\s+)?((?:IPC|BNS|NDPS|PMLA|UAPA|Arms\s+Act|CrPC)\s*[\d\w\s,/]+(?:\b|\.))\b",
+    re.IGNORECASE
+)
 
 ORG_SUFFIXES = [
     "Logistics", "Enterprises", "Pvt Ltd", "Private Limited", "Limited", "LLC", "Holdings",
@@ -210,6 +215,38 @@ class NERExtractor:
                 ))
                 occupied_spans.append((s, e))
 
+        # 7b. Bank Account Numbers
+        for m in BANK_ACC_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(1).strip()
+                entities.append(ExtractedEntity(
+                    id=f"temp_acc_{uuid.uuid4().hex[:6]}",
+                    type="account",
+                    label=f"ACC-{raw[-6:]}",
+                    original_text=m.group(0),
+                    span=(s, e),
+                    confidence=0.93,
+                    meta={"account_number": raw}
+                ))
+                occupied_spans.append((s, e))
+
+        # 7c. Statutory Legal Sections (IPC/BNS/NDPS/PMLA)
+        for m in LEGAL_SECTION_REGEX.finditer(text):
+            s, e = m.span()
+            if not is_overlapping(s, e):
+                raw = m.group(1).strip()
+                entities.append(ExtractedEntity(
+                    id=f"temp_law_{uuid.uuid4().hex[:6]}",
+                    type="legal_section",
+                    label=raw.upper(),
+                    original_text=m.group(0),
+                    span=(s, e),
+                    confidence=0.96,
+                    meta={"statute": raw}
+                ))
+                occupied_spans.append((s, e))
+
         # 8. Dates
         for m in DATE_REGEX.finditer(text):
             s, e = m.span()
@@ -351,6 +388,12 @@ class NERExtractor:
                 elif any(w in snippet for w in ["transfer", "sent", "paid", "rupees", "inr", "lakh", "crore", "account", "hawala", "diya", "bheja", "angadiya", "khatabook"]):
                     rel_type = "transferred_money_to"
                     confidence = 0.92
+                elif any(w in snippet for w in ["launder", "shell company", "cash mule", "layering"]):
+                    rel_type = "laundered_money_for"
+                    confidence = 0.93
+                elif any(w in snippet for w in ["co-accused", "accused along with", "conspirator", "gang member", "accomplice", "shamil"]):
+                    rel_type = "co_accused_with"
+                    confidence = 0.94
                 elif any(w in snippet for w in ["drove", "vehicle", "car", "plate", "owner", "registration", "se aaya", "convoy", "gadi", "scooter", "truck"]):
                     rel_type = "owns"
                     confidence = 0.85
@@ -360,6 +403,9 @@ class NERExtractor:
                 elif any(w in snippet for w in ["traveled", "fled", "met", "accompanied", "saath"]):
                     rel_type = "traveled_with"
                     confidence = 0.80
+                elif any(w in snippet for w in ["shelter", "harbored", "hid", "safehouse", "chhipaya"]):
+                    rel_type = "sheltered_by"
+                    confidence = 0.87
 
                 relationships.append(ProposedRelationship(
                     source_temp_id=e1.id,

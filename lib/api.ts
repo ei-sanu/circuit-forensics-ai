@@ -344,5 +344,43 @@ export const api = {
       unaffectedClusters: MASTER_INSIGHTS.communities.slice(isMajorRemoved ? 1 : 0),
     };
   },
+
+  // Transactions
+  importTransactions: (formData: FormData) =>
+    request<any>('/transactions/import', {
+      method: 'POST',
+      body: formData,
+    }),
+  getTransactionStats: (caseId?: string) =>
+    request<any>(`/transactions/stats${caseId ? `?caseId=${caseId}` : ''}`),
+
+  // Communications / CDR
+  importCommunications: (formData: FormData) =>
+    request<any>('/communications/import', {
+      method: 'POST',
+      body: formData,
+    }),
+  getCommunicationStats: (caseId?: string) =>
+    request<any>(`/communications/stats${caseId ? `?caseId=${caseId}` : ''}`),
+
+  // Timeline
+  getTimeline: (params?: { caseId?: string; entityId?: string; limit?: number }) => {
+    const qs = new URLSearchParams(params as any).toString();
+    return request<any[]>(`/timeline?${qs}`);
+  },
+
+  // Evidence & Court Dossiers
+  getEntityProvenance: (entityId: string) =>
+    request<any>(`/evidence/provenance/${entityId}`),
+  verifyDocumentHash: (documentId: string) =>
+    request<any>(`/evidence/verify/${documentId}`),
+  generateCourtReport: (data: { caseId: string; entityId?: string; officerName?: string; officerBadge?: string }) =>
+    request<any>('/reports/generate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  getCaseReport: (caseId: string) =>
+    request<any>(`/reports/cases/${caseId}`),
 };
+
 

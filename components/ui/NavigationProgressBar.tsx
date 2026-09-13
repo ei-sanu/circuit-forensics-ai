@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 export function NavigationProgressBar() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const [targetLabel, setTargetLabel] = useState<string>('');
@@ -47,7 +46,7 @@ export function NavigationProgressBar() {
   // Route change completion listener
   useEffect(() => {
     completeProgress();
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   // Global event listener for immediate click reactions
   useEffect(() => {

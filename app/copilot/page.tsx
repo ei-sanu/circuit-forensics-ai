@@ -3,25 +3,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Bot,
-  Send,
   Sparkles,
   ArrowRight,
   User,
   ExternalLink,
   ShieldAlert,
-  ChevronRight,
-  Lightbulb,
+  Search,
+  Plus,
+  Mic,
+  ArrowUp,
+  Paperclip,
+  X,
   FileText,
+  Check,
+  Volume2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import {
-  MASTER_ENTITIES,
-  MASTER_TRANSACTIONS,
-  MASTER_COMMUNICATIONS,
-  MASTER_INSIGHTS,
-  MASTER_CASES,
-} from '@/lib/data';
 import { CopilotThinkingSkeleton } from '@/components/ui/Skeleton';
 
 interface Message {
@@ -34,36 +32,17 @@ interface Message {
   suggested_followups?: string[];
   disclaimer?: string;
   linkedEntities?: Array<{ id: string; label: string }>;
+  attachedFiles?: string[];
 }
 
-const PRESET_QUERIES = [
-  'Who are the top influential syndicate entities?',
-  'How is Vikram Rathore connected to NorthStar Logistics?',
-  'What active suspicious transactions and Hawala loops are detected?',
-  'Explain the Louvain communities and chokepoint brokers',
-  'What highway escort convoys have been spotted?',
-];
-
 export default function CopilotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content:
-        'CIRCUIT Investigation Copilot initialized. I have indexed the active knowledge graph for Operation Nightfall (CR-2026-00124), Operation Goldcrest, and Operation Red Sand. Ask me about suspect influence rankings, money laundering paths, burner phone interceptions, or highway toll convoys.',
-      direct_facts: [
-        'Active case context: Operation Nightfall (CR-2026-00124)',
-        'Connected entities: 12 verified targets, 4 cases, 8 financial ledgers, 5 ANPR vehicles.',
-        'Algorithmic detectors: 10 ML fraud and anomaly detectors active.',
-      ],
-      analytical_reading:
-        'Select a suggested query below or type your inquiry to inspect graph facts and empirical evidence trails.',
-      suggested_followups: PRESET_QUERIES,
-      disclaimer: 'Analytical indicator for authorized LEA investigation only.',
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
+  const [isListening, setIsListening] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -73,7 +52,7 @@ export default function CopilotPage() {
   const generateGroundedAnswer = (query: string): Message => {
     const q = query.toLowerCase();
 
-    if (q.includes('influential') || q.includes('top') || q.includes('centrality')) {
+    if (q.includes('influential') || q.includes('top') || q.includes('centrality') || q.includes('leader')) {
       return {
         role: 'assistant',
         content:
@@ -92,10 +71,6 @@ export default function CopilotPage() {
         ],
         citations: [
           { source_type: 'graph_centrality', count: 5, description: 'NetworkX Betweenness rankings' },
-        ],
-        suggested_followups: [
-          'Show transactions linked to Vikram Rathore',
-          'Explain the Louvain communities and chokepoint brokers',
         ],
         disclaimer: 'Graph centrality metrics represent structural topological influence.',
       };
@@ -123,14 +98,10 @@ export default function CopilotPage() {
           { source_type: 'mca_filing', count: 1, description: 'Ministry of Corporate Affairs registry' },
           { source_type: 'financial_ledger', count: 2, description: 'RTGS and Hawala transaction records' },
         ],
-        suggested_followups: [
-          'What active suspicious transactions and Hawala loops are detected?',
-          'What highway escort convoys have been spotted?',
-        ],
       };
     }
 
-    if (q.includes('transaction') || q.includes('hawala') || q.includes('loop') || q.includes('anomaly')) {
+    if (q.includes('transaction') || q.includes('hawala') || q.includes('loop') || q.includes('anomaly') || q.includes('money')) {
       return {
         role: 'assistant',
         content:
@@ -149,10 +120,6 @@ export default function CopilotPage() {
         ],
         citations: [
           { source_type: 'aml_detector', count: 3, description: 'Statistical loop and smurfing detectors' },
-        ],
-        suggested_followups: [
-          'Show transactions linked to Vikram Rathore',
-          'What highway escort convoys have been spotted?',
         ],
       };
     }
@@ -176,10 +143,6 @@ export default function CopilotPage() {
         citations: [
           { source_type: 'anpr_fastag', count: 4, description: 'NHAI FASTag toll plaza transactions' },
         ],
-        suggested_followups: [
-          'How is Vikram Rathore connected to NorthStar Logistics?',
-          'Who are the top influential syndicate entities?',
-        ],
       };
     }
 
@@ -193,18 +156,23 @@ export default function CopilotPage() {
       ],
       analytical_reading:
         'Recommend inspecting the Entity Registry and Anomaly Alerts tabs for full evidence cross-verification.',
-      suggested_followups: PRESET_QUERIES.slice(0, 3),
       disclaimer: 'Forensic inference for authorized intelligence investigation.',
     };
   };
 
   const handleSend = async (queryText?: string) => {
     const q = queryText || input;
-    if (!q.trim()) return;
+    if (!q.trim() && attachedFiles.length === 0) return;
 
-    const userMsg: Message = { role: 'user', content: q };
+    const userMsg: Message = {
+      role: 'user',
+      content: q || 'Analyze attached intelligence files',
+      attachedFiles: attachedFiles.length > 0 ? [...attachedFiles] : undefined,
+    };
+
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
+    setAttachedFiles([]);
     setLoading(true);
 
     try {
@@ -217,7 +185,6 @@ export default function CopilotPage() {
           direct_facts: res.direct_facts,
           analytical_reading: res.analytical_reading,
           citations: res.citations,
-          suggested_followups: res.suggested_followups || PRESET_QUERIES.slice(0, 3),
           disclaimer: res.disclaimer || 'Empirical evidence analysis.',
         };
         setMessages((prev) => [...prev, botMsg]);
@@ -225,7 +192,7 @@ export default function CopilotPage() {
         const fallbackMsg = generateGroundedAnswer(q);
         setMessages((prev) => [...prev, fallbackMsg]);
       }
-    } catch (err: any) {
+    } catch {
       const fallbackMsg = generateGroundedAnswer(q);
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
@@ -233,183 +200,254 @@ export default function CopilotPage() {
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const names = Array.from(files).map((f) => f.name);
+      setAttachedFiles((prev) => [...prev, ...names]);
+    }
+  };
+
+  const triggerVoiceInput = () => {
+    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      setIsListening(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        setIsListening(false);
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+      recognition.start();
+    } else {
+      setInput('Who are the top influential syndicate entities in Operation Nightfall?');
+    }
+  };
+
   return (
-    <div className="h-[calc(100vh-6.5rem)] flex flex-col gap-4 text-charcoal-900 animate-fade-in">
-      {/* Header */}
-      <div className="p-4 rounded-3xl glass-panel flex items-center justify-between text-xs shrink-0 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-charcoal-900 text-beige-200">
-            <Bot className="w-5 h-5 text-beige-200" />
+    <div className="h-[calc(100vh-6.5rem)] flex flex-col justify-between max-w-4xl mx-auto text-neutral-900 dark:text-neutral-100 animate-fade-in select-none">
+      {/* Messages Area or Centered Minimalist Welcome Screen */}
+      {messages.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-4 space-y-6">
+          {/* Centered Minimalist AI Avatar Emblem matching Screenshot */}
+          <div className="relative flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-neutral-900 dark:bg-slate-800 text-white flex items-center justify-center shadow-lg shadow-neutral-900/10">
+              <div className="w-10 h-10 rounded-full bg-neutral-800 dark:bg-slate-700 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-neutral-200" />
+              </div>
+            </div>
           </div>
-          <div>
-            <h2 className="font-bold text-charcoal-950 text-sm">Investigation AI Copilot</h2>
-            <p className="text-charcoal-600 text-[11px]">
-              Multi-hop graph reasoning, Hawala flow tracing, and explainable evidence verification.
+
+          <div className="space-y-1.5 max-w-md">
+            <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+              CIRCUIT AI Copilot
+            </h2>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+              Ask questions about suspect networks, Hawala transaction loops, vehicle convoys, or cross-border syndicates.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/insights"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-beige-100 border border-beige-300 text-charcoal-800 text-[11px] font-bold transition shadow-sm"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-purple-700" />
-            <span>AI / ML Insights</span>
-          </Link>
-          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-charcoal-900 text-beige-100 text-[11px] font-mono font-bold shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Graph Reasoner Online</span>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 min-h-0">
+          {messages.map((m, idx) => (
+            <div
+              key={idx}
+              className={`flex gap-3 max-w-2xl ${m.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+            >
+              <div
+                className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold ${
+                  m.role === 'user'
+                    ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-slate-700 shadow-xs'
+                }`}
+              >
+                {m.role === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+              </div>
+
+              <div
+                className={`p-4 rounded-3xl text-xs space-y-3 ${
+                  m.role === 'user'
+                    ? 'bg-neutral-900 text-white dark:bg-slate-800 dark:text-white rounded-tr-none shadow-sm'
+                    : 'bg-white dark:bg-slate-900 border border-neutral-200/80 dark:border-slate-800 text-neutral-900 dark:text-neutral-100 rounded-tl-none shadow-xs'
+                }`}
+              >
+                <p className="leading-relaxed text-[13px] font-normal">{m.content}</p>
+
+                {/* Attached Files Tag */}
+                {m.attachedFiles && m.attachedFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {m.attachedFiles.map((fn, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-neutral-800 dark:bg-slate-700 text-neutral-300 flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3 text-neutral-400" />
+                        <span>{fn}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Direct Observed Facts Box */}
+                {m.direct_facts && m.direct_facts.length > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-slate-800/60 border border-neutral-200/60 dark:border-slate-700/60 space-y-1.5">
+                    <span className="text-[10px] font-mono uppercase text-neutral-600 dark:text-neutral-400 font-bold block">
+                      Empirical Graph Facts & Evidential Records:
+                    </span>
+                    <ul className="list-disc pl-4 space-y-1 text-neutral-700 dark:text-neutral-300 font-mono text-[11px]">
+                      {m.direct_facts.map((fact, i) => (
+                        <li key={i}>{fact}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Linked Entity Badges */}
+                {m.linkedEntities && m.linkedEntities.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] text-neutral-400 font-mono uppercase font-bold mr-1">
+                      Target Entities:
+                    </span>
+                    {m.linkedEntities.map((ent) => (
+                      <Link
+                        key={ent.id}
+                        href={`/entities`}
+                        className="px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-slate-800 hover:bg-neutral-200 dark:hover:bg-slate-700 border border-neutral-200 dark:border-slate-700 text-neutral-900 dark:text-white font-bold text-[10px] inline-flex items-center gap-1 transition"
+                      >
+                        <span>{ent.label}</span>
+                        <ExternalLink className="w-3 h-3 text-neutral-400" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Citations */}
+                {m.citations && m.citations.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {m.citations.map((c, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400"
+                      >
+                        Source: {c.source_type} ({c.count} records)
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Disclaimer */}
+                {m.disclaimer && (
+                  <p className="text-[10px] text-neutral-400 italic pt-1 border-t border-neutral-200/60 dark:border-slate-800">
+                    ⚠️ {m.disclaimer}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+          {loading && <CopilotThinkingSkeleton />}
+          <div ref={chatBottomRef} />
+        </div>
+      )}
+
+      {/* Minimalist Prompt Capsule Form matching Screenshot */}
+      <div className="p-4 shrink-0">
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          multiple
+          className="hidden"
+        />
+
+        {/* Selected Attached Files Pills */}
+        {attachedFiles.length > 0 && (
+          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto px-2">
+            {attachedFiles.map((file, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral-200 dark:bg-slate-800 text-neutral-800 dark:text-neutral-200 text-xs shadow-xs"
+              >
+                <FileText className="w-3 h-3 text-neutral-500" />
+                <span className="truncate max-w-[140px]">{file}</span>
+                <button
+                  type="button"
+                  onClick={() => setAttachedFiles((prev) => prev.filter((_, i) => i !== idx))}
+                  className="hover:text-red-500 transition ml-0.5 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* The Sleek Prompt Capsule matching the Reference Screenshot */}
+        <div className="w-full bg-[#181a1d] dark:bg-[#131720] border border-neutral-800 dark:border-slate-800 rounded-[22px] p-3 shadow-xl space-y-2.5">
+          {/* Top Row: Search Icon + Text Input */}
+          <div className="flex items-center gap-2.5 px-1">
+            <Search className="w-4 h-4 text-neutral-400 shrink-0" />
+            <input
+              type="text"
+              placeholder="Ask anything about suspects, Hawala loops, convoys, or case facts..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              className="w-full bg-transparent text-xs sm:text-sm text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
+            />
+          </div>
+
+          {/* Bottom Row: + Add tabs or files & Mic / Submit Arrow */}
+          <div className="flex items-center justify-between pt-1 px-1 border-t border-neutral-800/60 dark:border-slate-800/60">
+            {/* Left Action: + Add tabs or files */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-200 transition cursor-pointer py-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-medium">Add tabs or files</span>
+            </button>
+
+            {/* Right Actions: Mic & Upward Send Arrow */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={triggerVoiceInput}
+                title="Voice Dictation"
+                className={`p-1.5 rounded-full transition cursor-pointer ${
+                  isListening
+                    ? 'text-red-400 bg-red-950/60 animate-pulse'
+                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60'
+                }`}
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSend()}
+                disabled={loading || (!input.trim() && attachedFiles.length === 0)}
+                title="Send query"
+                className="w-7 h-7 rounded-full bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+              >
+                <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Preset Query Strip */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 shrink-0 text-xs">
-        <span className="text-[10px] font-mono text-charcoal-500 uppercase font-bold flex items-center gap-1 shrink-0 pl-1">
-          <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-          <span>Quick Inquiries:</span>
-        </span>
-        {PRESET_QUERIES.map((preset, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleSend(preset)}
-            className="px-3 py-1.5 rounded-full bg-white/90 hover:bg-white border border-beige-300 hover:border-charcoal-700 text-charcoal-800 text-[11px] font-medium transition shrink-0 shadow-sm cursor-pointer active:scale-95"
-          >
-            {preset}
-          </button>
-        ))}
-      </div>
-
-      {/* Chat Messages Log */}
-      <div className="flex-1 glass-panel rounded-3xl p-6 overflow-y-auto space-y-5 min-h-0 shadow-xl">
-        {messages.map((m, idx) => (
-          <div
-            key={idx}
-            className={`flex gap-3 max-w-3xl ${m.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
-          >
-            <div
-              className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-xs font-bold ${
-                m.role === 'user'
-                  ? 'bg-charcoal-900 text-beige-200 shadow-md'
-                  : 'bg-white text-charcoal-900 border border-beige-300 shadow-sm'
-              }`}
-            >
-              {m.role === 'user' ? <User className="w-4 h-4 text-beige-200" /> : <Bot className="w-4 h-4 text-charcoal-900" />}
-            </div>
-
-            <div
-              className={`p-5 rounded-3xl text-xs space-y-3.5 ${
-                m.role === 'user'
-                  ? 'bg-charcoal-900 text-beige-100 font-medium rounded-tr-none shadow-md'
-                  : 'bg-white border border-beige-300 text-charcoal-900 rounded-tl-none shadow-sm'
-              }`}
-            >
-              <p className="leading-relaxed font-normal text-[13px]">{m.content}</p>
-
-              {/* Direct Observed Facts Box */}
-              {m.direct_facts && m.direct_facts.length > 0 && (
-                <div className="p-3.5 rounded-2xl bg-beige-50 border border-beige-200 space-y-1.5">
-                  <span className="text-[10px] font-mono uppercase text-charcoal-700 font-bold block">
-                    Empirical Graph Facts & Evidential Records:
-                  </span>
-                  <ul className="list-disc pl-4 space-y-1 text-charcoal-700 font-mono text-[11px]">
-                    {m.direct_facts.map((fact, i) => (
-                      <li key={i}>{fact}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Linked Entity Badges */}
-              {m.linkedEntities && m.linkedEntities.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-[10px] text-charcoal-500 font-mono uppercase font-bold mr-1">
-                    Direct Entity Links:
-                  </span>
-                  {m.linkedEntities.map((ent) => (
-                    <Link
-                      key={ent.id}
-                      href={`/entities`}
-                      className="px-2.5 py-1 rounded-full bg-beige-100 hover:bg-beige-200 border border-beige-300 text-charcoal-900 font-bold text-[10px] inline-flex items-center gap-1 transition"
-                    >
-                      <span>{ent.label}</span>
-                      <ExternalLink className="w-3 h-3 text-charcoal-500" />
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              {/* Citations */}
-              {m.citations && m.citations.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {m.citations.map((c, i) => (
-                    <span
-                      key={i}
-                      className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white border border-beige-300 text-charcoal-700 shadow-sm"
-                    >
-                      Evidence Source: {c.source_type} ({c.count} records)
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Suggested Followups */}
-              {m.suggested_followups && m.suggested_followups.length > 0 && (
-                <div className="pt-2 border-t border-beige-200 space-y-1.5">
-                  <span className="text-[10px] font-mono text-charcoal-500 uppercase font-bold">
-                    Suggested Next Steps:
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {m.suggested_followups.map((s, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleSend(s)}
-                        className="text-[11px] px-3.5 py-1.5 rounded-full bg-beige-50 hover:bg-beige-100 text-charcoal-800 border border-beige-300 transition flex items-center gap-1.5 cursor-pointer font-medium"
-                      >
-                        <span>{s}</span>
-                        <ArrowRight className="w-3 h-3 text-charcoal-500" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Disclaimer */}
-              {m.disclaimer && (
-                <p className="text-[10px] text-charcoal-500 italic pt-1 border-t border-beige-200">
-                  ⚠️ {m.disclaimer}
-                </p>
-              )}
-            </div>
-          </div>
-        ))}
-        {loading && <CopilotThinkingSkeleton />}
-        <div ref={chatBottomRef} />
-      </div>
-
-      {/* Input Form */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-        className="flex items-center gap-2 p-2 bg-white/95 border border-beige-300 rounded-full shrink-0 shadow-xl backdrop-blur-xl"
-      >
-        <input
-          type="text"
-          placeholder="Ask Copilot about suspects, Hawala paths, phone intercepts, or convoy records..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="flex-1 px-5 py-2.5 bg-transparent text-xs text-charcoal-900 placeholder:text-charcoal-400 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={loading || !input.trim()}
-          className="p-3 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-beige-100 transition disabled:opacity-50 shadow-md shadow-charcoal-900/15 cursor-pointer active:scale-95"
-        >
-          <Send className="w-4 h-4 text-beige-200" />
-        </button>
-      </form>
     </div>
   );
 }

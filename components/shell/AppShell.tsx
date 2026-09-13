@@ -46,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-white text-charcoal-900">
+    <div className="flex min-h-screen w-full bg-[#f8f9fa] dark:bg-[#090d16] text-neutral-900 dark:text-neutral-100 transition-colors duration-200">
       <NavigationProgressBar />
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">

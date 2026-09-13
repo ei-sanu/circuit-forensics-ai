@@ -109,10 +109,21 @@ class MLClient:
                 "hidden_connectors": [],
             }
 
-    async def query_copilot(self, query: str, case_id: Optional[str] = None) -> Dict[str, Any]:
+    async def query_copilot(
+        self,
+        query: str,
+        case_id: Optional[str] = None,
+        graph_state: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """Query AI Copilot with evidentiary citations and analytical readings in-process."""
         try:
-            req = CopilotQueryRequest(query=query, case_id=case_id)
+            g_obj = None
+            if graph_state:
+                nodes = [EntityNode(**n) for n in graph_state.get("nodes", [])]
+                edges = [GraphEdge(**e) for e in graph_state.get("edges", [])]
+                g_obj = GraphState(nodes=nodes, edges=edges)
+
+            req = CopilotQueryRequest(query=query, case_id=case_id, graph=g_obj)
             res = await self.copilot_engine.answer_query(req)
             return {
                 "answer": f"{res.analytical_reading}\n\n" + "\n".join(res.direct_facts),

@@ -6,7 +6,7 @@ from sqlalchemy import select, desc
 from app.core.config import settings
 from app.core.database import get_session_maker
 from app.core.security import hash_password, verify_password
-from app.core.jwt import create_access_token
+from app.core.jwt import create_access_token, create_refresh_token, decode_refresh_token
 from app.core.exceptions import UnauthorizedError, ConflictError, NotFoundError
 from app.core.permissions import Role
 from app.models.user import User
@@ -167,9 +167,11 @@ class AuthService:
         }
 
         token = create_access_token(payload)
+        refresh_token = create_refresh_token(payload)
 
         return {
             "accessToken": token,
+            "refreshToken": refresh_token,
             "tokenType": "Bearer",
             "user": user_dict,
         }
@@ -219,6 +221,7 @@ class AuthService:
         }
 
         token = create_access_token(payload)
+        refresh_token = create_refresh_token(payload)
 
         await audit_service.log(
             user_id=user_id,
@@ -233,9 +236,49 @@ class AuthService:
 
         return {
             "accessToken": token,
+            "refreshToken": refresh_token,
             "tokenType": "Bearer",
             "user": user_dict,
         }
+
+    async def refresh_session(self, refresh_token: str) -> Dict[str, Any]:
+        """Validate refresh token and issue new rotating access & refresh token pair."""
+        try:
+            payload = decode_refresh_token(refresh_token)
+        except Exception as e:
+            raise UnauthorizedError(f"Invalid or expired refresh token: {e}")
+
+        user_id = payload.get("sub")
+        email = payload.get("email")
+
+        maker = get_session_maker()
+        async with maker() as session:
+            res = await session.execute(select(User).where((User.user_id == user_id) | (User.email == email)))
+            user = res.scalar_one_or_none()
+            if not user or not user.is_active:
+                raise UnauthorizedError("User is no longer active.")
+            user_dict = user.to_dict()
+
+        new_payload = {
+            "sub": user_dict.get("userId") or user.user_id,
+            "email": user.email,
+            "role": user.role,
+            "name": user.name,
+            "stationName": user.station_name,
+            "district": user.district,
+            "inchargeRank": user.incharge_rank,
+        }
+
+        new_access = create_access_token(new_payload)
+        new_refresh = create_refresh_token(new_payload)
+
+        return {
+            "accessToken": new_access,
+            "refreshToken": new_refresh,
+            "tokenType": "Bearer",
+            "user": user_dict,
+        }
+
 
     async def register(
         self,

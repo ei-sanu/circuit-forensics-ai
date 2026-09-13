@@ -31,6 +31,10 @@ def test_anomaly_detectors_core():
         # Circular loop (A-1 -> A-2 -> A-3 -> A-1)
         TransactionRecord(id="tx-2", from_type="account", from_id="A-2", to_type="account", to_id="A-3", amount=500000.0, timestamp="2025-08-01T11:00:00Z"),
         TransactionRecord(id="tx-3", from_type="account", from_id="A-3", to_type="account", to_id="A-1", amount=450000.0, timestamp="2025-08-01T12:00:00Z"),
+        # Structuring sub-threshold PAN evasion transfers (A-1 -> P-1)
+        TransactionRecord(id="tx-smurf-1", from_type="account", from_id="A-1", to_type="person", to_id="P-1", amount=48000.0, timestamp="2025-08-01T13:00:00Z"),
+        TransactionRecord(id="tx-smurf-2", from_type="account", from_id="A-1", to_type="person", to_id="P-1", amount=49500.0, timestamp="2025-08-01T14:00:00Z"),
+        TransactionRecord(id="tx-smurf-3", from_type="account", from_id="A-1", to_type="person", to_id="P-1", amount=47000.0, timestamp="2025-08-01T15:00:00Z"),
     ]
     comms = [
         CommunicationRecord(id=f"c-{i}", from_number="+919876543210", to_number="+919811122233", timestamp="2025-08-01T02:30:00Z")
@@ -44,6 +48,7 @@ def test_anomaly_detectors_core():
     assert "large_transaction" in det_names
     assert "circular_flow" in det_names
     assert "odd_hour_communications" in det_names
+    assert "structuring_smurfing" in det_names
 
 
 def test_detect_anomalies_api():
