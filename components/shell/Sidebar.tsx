@@ -194,42 +194,130 @@ export function Sidebar() {
       ];
     }
 
-    // Default: Admin, Investigator, Analyst
+    if (role === 'analyst') {
+      return [
+        {
+          id: 'general',
+          label: 'General',
+          icon: LayoutDashboard,
+          items: [
+            { label: 'Analyst Dashboard', href: '/dashboard', icon: LayoutDashboard },
+            { label: 'Alerts & Anomalies', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
+          ],
+        },
+        {
+          id: 'forensics',
+          label: 'Financial & Telecom Intel',
+          icon: Landmark,
+          items: [
+            { label: 'Transactions & Hawala', href: '/transactions', icon: Landmark },
+            { label: 'Communications CDR', href: '/communications', icon: Phone },
+            { label: 'Geo Intelligence', href: '/locations', icon: MapPin },
+            { label: 'Vehicle Intel', href: '/vehicles', icon: Car },
+          ],
+        },
+        {
+          id: 'ai',
+          label: 'Graph & Analytics',
+          icon: BrainCircuit,
+          items: [
+            { label: 'Intelligence Lab', href: '/intelligence-lab', icon: Sparkles },
+            { label: 'Network Explorer', href: '/explorer', icon: Network },
+            { label: 'AI Copilot', href: '/copilot', icon: Bot },
+          ],
+        },
+        {
+          id: 'system',
+          label: 'Reporting & Dossiers',
+          icon: FileStack,
+          items: [
+            { label: 'Reports & Dossiers', href: '/reports', icon: FileSpreadsheet },
+            { label: 'Settings', href: '/settings', icon: Settings },
+          ],
+        },
+      ];
+    }
+
+    if (role === 'investigator') {
+      return [
+        {
+          id: 'general',
+          label: 'General',
+          icon: LayoutDashboard,
+          items: [
+            { label: 'Investigator Dashboard', href: '/dashboard', icon: LayoutDashboard },
+            { label: 'Threat Alerts', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
+          ],
+        },
+        {
+          id: 'investigation',
+          label: 'Case Operations',
+          icon: FolderGit2,
+          items: [
+            { label: 'Active Cases', href: '/cases', icon: Briefcase },
+            { label: 'Entity Registry', href: '/entities', icon: Users },
+            { label: 'FIR Track & Registry', href: '/fir-track', icon: FileCheck },
+            { label: 'Network Explorer', href: '/explorer', icon: Network },
+          ],
+        },
+        {
+          id: 'surveillance',
+          label: 'Field Surveillance',
+          icon: Radar,
+          items: [
+            { label: 'Jurisdiction Map', href: '/locations', icon: MapPin },
+            { label: 'Vehicle Intel', href: '/vehicles', icon: Car },
+            { label: 'Communications CDR', href: '/communications', icon: Phone },
+          ],
+        },
+        {
+          id: 'system',
+          label: 'Evidence & Reports',
+          icon: FileStack,
+          items: [
+            { label: 'Court Dossiers', href: '/reports', icon: FileSpreadsheet },
+            { label: 'Settings', href: '/settings', icon: Settings },
+          ],
+        },
+      ];
+    }
+
+    // Default: Admin (Full Complete System Authority)
     const categories: NavCategory[] = [
       {
         id: 'general',
         label: 'General',
         icon: LayoutDashboard,
         items: [
-          { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-          { label: 'Alerts & Threats', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
+          { label: 'Admin Command Console', href: '/dashboard', icon: LayoutDashboard },
+          { label: 'All Alerts & Threats', href: '/alerts', icon: ShieldAlert, badge: openAlertsCount > 0 ? openAlertsCount : undefined },
         ],
       },
       {
         id: 'investigation',
-        label: 'Investigation',
+        label: 'Investigation & Cases',
         icon: FolderGit2,
         items: [
-          { label: 'Network Explorer', href: '/explorer', icon: Network },
-          { label: 'Entity Registry', href: '/entities', icon: Users },
           { label: 'Active Cases', href: '/cases', icon: Briefcase },
-          { label: 'FIR Track', href: '/fir-track', icon: FileCheck },
+          { label: 'Entity Registry', href: '/entities', icon: Users },
+          { label: 'FIR Track & Registry', href: '/fir-track', icon: FileCheck },
+          { label: 'Network Explorer', href: '/explorer', icon: Network },
         ],
       },
       {
         id: 'surveillance',
-        label: 'Surveillance & Intel',
+        label: 'Financial & Geo Intel',
         icon: Radar,
         items: [
+          { label: 'Transactions & Hawala', href: '/transactions', icon: Landmark },
+          { label: 'Communications CDR', href: '/communications', icon: Phone },
           { label: 'Geo Intelligence', href: '/locations', icon: MapPin },
           { label: 'Vehicle Intel', href: '/vehicles', icon: Car },
-          { label: 'Communications CDR', href: '/communications', icon: Phone },
-          { label: 'Transactions & Hawala', href: '/transactions', icon: Landmark },
         ],
       },
       {
         id: 'ai',
-        label: 'AI Analytics',
+        label: 'AI & Anomaly Labs',
         icon: BrainCircuit,
         items: [
           { label: 'AI Copilot', href: '/copilot', icon: Bot },
@@ -238,12 +326,12 @@ export function Sidebar() {
       },
       {
         id: 'system',
-        label: 'System & Reports',
+        label: 'System Administration',
         icon: FileStack,
         items: [
           { label: 'Reports & Dossiers', href: '/reports', icon: FileSpreadsheet },
-          ...(role === 'admin' ? [{ label: 'HR Approvals', href: '/settings?tab=users', icon: UserPlus }] : []),
-          { label: 'Settings', href: '/settings', icon: Settings },
+          { label: 'HR User Approvals', href: '/settings?tab=users', icon: UserPlus },
+          { label: 'System Settings', href: '/settings', icon: Settings },
         ],
       },
     ];

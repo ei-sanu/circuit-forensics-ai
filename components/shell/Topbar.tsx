@@ -73,19 +73,10 @@ export function Topbar({ onSearch, activeCase, onCaseChange }: TopbarProps) {
           <span>Live Map</span>
         </Link>
 
-        {/* Case Context Indicator */}
-        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 text-xs text-neutral-700 dark:text-neutral-300 shadow-xs">
-          <Filter className="w-3 h-3 text-neutral-400" />
-          <span className="text-neutral-400 text-[11px]">Scope:</span>
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100 text-xs truncate max-w-[140px] lg:max-w-[220px]">
-            {activeCase || 'Operation Nightfall'}
-          </span>
-        </div>
-
         {/* Live ML Connected Chip */}
-        <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 dark:bg-blue-950/60 border border-neutral-800 dark:border-blue-800/40 text-white text-xs font-medium shadow-xs">
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 dark:bg-blue-950/60 border border-neutral-800 dark:border-blue-800/40 text-white text-xs font-medium shadow-xs">
           <Sparkles className="w-3 h-3 text-blue-400" />
-          <span className="text-[11px]">Graph Engine</span>
+          <span className="text-[11px]">Graph Engine Online</span>
         </div>
       </div>
     </header>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Briefcase,
   Users,
@@ -34,7 +35,7 @@ import {
   Bar,
 } from 'recharts';
 import { api } from '@/lib/api';
-import { getCurrentUser, setCurrentUser, AuthUser } from '@/lib/auth';
+import { getCurrentUser, AuthUser } from '@/lib/auth';
 import { formatDate } from '@/lib/utils';
 import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import {
@@ -58,6 +59,7 @@ const ACTIVITY_60_DAYS = Array.from({ length: 20 }, (_, i) => {
 }).reverse();
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [currentUser, setUserState] = useState<AuthUser | null>(null);
   const [activeRole, setActiveRole] = useState<'investigator' | 'analyst' | 'admin' | 'police_station' | 'hr'>('investigator');
   const [loading, setLoading] = useState(true);
@@ -77,11 +79,19 @@ export default function DashboardPage() {
   useEffect(() => {
     const user = getCurrentUser();
     if (user) {
+      if (user.role === 'police_station') {
+        router.replace('/police');
+        return;
+      }
+      if (user.role === 'hr') {
+        router.replace('/hr');
+        return;
+      }
       setUserState(user);
       setActiveRole(user.role);
     }
     loadDashboardData();
-  }, []);
+  }, [router]);
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -107,15 +117,6 @@ export default function DashboardPage() {
     }
   };
 
-  const switchRole = (newRole: 'investigator' | 'analyst' | 'admin') => {
-    setActiveRole(newRole);
-    if (currentUser) {
-      const updated = { ...currentUser, role: newRole };
-      setUserState(updated);
-      setCurrentUser(updated);
-    }
-  };
-
   const handleDismissAlert = (alertId: string) => {
     setAlerts((prev) => prev.map((a) => (a.alertId === alertId ? { ...a, status: 'dismissed' } : a)));
     if (selectedAlert?.alertId === alertId) {
@@ -129,61 +130,52 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 text-charcoal-900 pb-12">
-      {/* Role Navigation Switcher & Banner */}
-      <div className="p-6 rounded-3xl glass-panel flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+      {/* Executive Operational Header (Strictly Bound to Logged-in User Profile) */}
+      <div className="p-6 rounded-3xl bg-white border border-slate-200/90 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-charcoal-900 flex items-center justify-center text-beige-200 font-bold shadow-md">
-            {activeRole === 'investigator' && <Briefcase className="w-6 h-6 text-beige-200" />}
-            {activeRole === 'analyst' && <Activity className="w-6 h-6 text-beige-200" />}
-            {activeRole === 'admin' && <Shield className="w-6 h-6 text-beige-200" />}
+          <div className="w-12 h-12 rounded-2xl bg-charcoal-950 text-white flex items-center justify-center font-bold shadow-md">
+            {activeRole === 'admin' && <Shield className="w-6 h-6 text-slate-200" />}
+            {activeRole === 'analyst' && <Activity className="w-6 h-6 text-slate-200" />}
+            {activeRole === 'investigator' && <Briefcase className="w-6 h-6 text-slate-200" />}
+            {activeRole === 'police_station' && <ShieldAlert className="w-6 h-6 text-slate-200" />}
+            {activeRole === 'hr' && <Users className="w-6 h-6 text-slate-200" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-charcoal-950 capitalize">{activeRole} Intelligence Console</h2>
-              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white border border-beige-300 text-charcoal-800 uppercase font-bold shadow-sm">
-                RBAC Active
+              <h2 className="text-lg font-bold text-charcoal-950">
+                {activeRole === 'admin' && 'Central Command & Intelligence Directorate'}
+                {activeRole === 'analyst' && 'Financial Forensics & Anomaly Workspace'}
+                {activeRole === 'investigator' && 'Investigative Operations & Case Console'}
+                {activeRole === 'police_station' && 'Police Station Operational Console'}
+                {activeRole === 'hr' && 'HR Directorate & Personnel Vault'}
+              </h2>
+              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 uppercase font-bold">
+                {currentUser?.role?.replace('_', ' ') || 'Authorized'}
               </span>
             </div>
-            <p className="text-xs text-charcoal-600 mt-0.5 font-normal">
-              {activeRole === 'investigator' && 'Case files, suspect ego graphs, evidence review, and field actions.'}
-              {activeRole === 'analyst' && 'Financial forensic anomalies, circular money flows, and NetworkX centrality.'}
-              {activeRole === 'admin' && 'Real-time compliance audit logs, user permissions, and microservice health.'}
+            <p className="text-xs text-slate-500 mt-0.5 font-normal">
+              {currentUser?.name ? `${currentUser.name} • ` : ''}
+              {currentUser?.department || 'Cyber & Financial Crime Intelligence Division'}
+              {currentUser?.badgeNumber ? ` • Badge ${currentUser.badgeNumber}` : ''}
             </p>
           </div>
         </div>
 
-        {/* 1-Click Role Switcher */}
-        <div className="flex items-center gap-1.5 p-1 rounded-full bg-white/80 border border-beige-300 text-xs font-semibold self-start md:self-auto shadow-sm">
-          <button
-            onClick={() => switchRole('investigator')}
-            className={`px-3.5 py-1.5 rounded-full transition-all ${
-              activeRole === 'investigator'
-                ? 'bg-charcoal-900 text-beige-100 shadow-sm font-bold'
-                : 'text-charcoal-600 hover:text-charcoal-950'
-            }`}
-          >
-            Investigator
-          </button>
-          <button
-            onClick={() => switchRole('analyst')}
-            className={`px-3.5 py-1.5 rounded-full transition-all ${
-              activeRole === 'analyst'
-                ? 'bg-charcoal-900 text-beige-100 shadow-sm font-bold'
-                : 'text-charcoal-600 hover:text-charcoal-950'
-            }`}
-          >
-            Analyst
-          </button>
-          <button
-            onClick={() => switchRole('admin')}
-            className={`px-3.5 py-1.5 rounded-full transition-all ${
-              activeRole === 'admin'
-                ? 'bg-charcoal-900 text-beige-100 shadow-sm font-bold'
-                : 'text-charcoal-600 hover:text-charcoal-950'
-            }`}
-          >
-            Admin
-          </button>
+        {/* Officer Credential Badge */}
+        <div className="flex items-center gap-3 text-xs font-medium self-start md:self-auto">
+          <div className="px-3.5 py-1.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-[11px] font-mono">{currentUser?.stationName || 'National Cyber Cell HQ'}</span>
+          </div>
+          {activeRole === 'admin' && (
+            <Link
+              href="/settings?tab=users"
+              className="px-3.5 py-1.5 rounded-2xl bg-charcoal-950 text-white text-[11px] font-semibold hover:bg-charcoal-900 transition flex items-center gap-1.5"
+            >
+              <span>User Governance</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
         </div>
       </div>
 
