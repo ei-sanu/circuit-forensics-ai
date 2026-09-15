@@ -22,6 +22,13 @@ import {
   Compass,
   FileCheck,
   LayoutDashboard,
+  Landmark,
+  Phone,
+  Scale,
+  Cpu,
+  Fingerprint,
+  FileSpreadsheet,
+  Zap,
 } from 'lucide-react';
 import { LandingNavbar } from '@/components/landing/LandingNavbar';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -49,52 +56,52 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-charcoal-900 flex flex-col selection:bg-sky-200 selection:text-charcoal-950">
+    <div className="min-h-screen bg-[#fafbfc] text-charcoal-900 flex flex-col selection:bg-slate-200 selection:text-charcoal-950 font-sans">
       {/* Floating Pill Navbar with Auth Trigger */}
       <LandingNavbar onOpenAuth={openAuth} />
 
       {/* Hero Section */}
-      <section className="relative pt-36 pb-20 px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
-        {/* Subtle Ambient Light Auras on White */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-sky-100/50 blur-[130px] rounded-full pointer-events-none" />
-        <div className="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[300px] bg-slate-100/70 blur-[100px] rounded-full pointer-events-none" />
+      <section className="relative pt-36 pb-16 px-6 max-w-6xl mx-auto flex flex-col items-center text-center">
+        {/* Subtle Background Glow Elements */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] bg-slate-200/50 blur-[120px] rounded-full pointer-events-none" />
 
-        {/* Top Tag Pill */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-beige-300/80 text-xs font-mono text-charcoal-700 shadow-sm mb-8 backdrop-blur-md">
+        {/* Official Platform Tag Badge */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/90 text-[11px] font-medium text-slate-700 shadow-xs mb-6 backdrop-blur-md">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>CIRCUIT v2.0 • Law Enforcement & Intelligence Platform</span>
+          <span className="font-semibold text-charcoal-900">CIRCUIT 2.0</span>
+          <span className="text-slate-400">•</span>
+          <span>Criminal Intelligence & Connected-Entity Tracking</span>
         </div>
 
         {/* Main Headline */}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-charcoal-950 tracking-tight leading-[1.14] max-w-4xl">
-          Unmasking Hidden Syndicates Through{' '}
-          <span className="bg-gradient-to-r from-charcoal-950 via-charcoal-800 to-charcoal-600 bg-clip-text text-transparent">
-            Connected Intelligence
-          </span>
+        <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-extrabold text-charcoal-950 tracking-tight leading-[1.12] max-w-4xl">
+          Connecting Hidden Criminal Networks{' '}
+          <span className="text-slate-600 font-bold">Across Jurisdictions.</span>
         </h1>
 
-        <p className="mt-6 text-sm sm:text-base text-charcoal-600 max-w-2xl leading-relaxed font-normal">
-          Ingest unstructured FIRs, bank statements, and Call Detail Records. Build live knowledge graphs, pinpoint hidden money laundering loops, and empower investigative decision-making with explainable AI.
+        {/* Subtitle */}
+        <p className="mt-5 text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed font-normal">
+          An integrated investigative operating system for law enforcement agencies, cyber cells, and financial intelligence units to track syndicates, dismantle money laundering pipelines, and generate court-admissible evidence.
         </p>
 
-        {/* Action Buttons (Dynamically responding to Auth State) */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
           {user ? (
             <>
               <Link
                 href={getDashboardHref()}
-                className="px-8 py-4 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-beige-100 font-bold text-xs shadow-xl shadow-charcoal-900/15 transition-all flex items-center gap-2.5 active:scale-95 cursor-pointer hover:shadow-2xl"
+                className="px-7 py-3.5 rounded-full bg-charcoal-950 hover:bg-charcoal-900 text-white font-semibold text-xs shadow-md shadow-charcoal-950/10 transition-all flex items-center gap-2 active:scale-98 cursor-pointer"
               >
-                <LayoutDashboard className="w-4 h-4 text-beige-300" />
-                <span>Go to Active Dashboard</span>
-                <ArrowRight className="w-4 h-4 text-beige-300" />
+                <LayoutDashboard className="w-4 h-4 text-slate-300" />
+                <span>Go to Active Workspace</span>
+                <ArrowRight className="w-4 h-4 text-slate-400" />
               </Link>
               <Link
                 href="/explorer"
-                className="px-8 py-4 rounded-full bg-white/80 hover:bg-white text-charcoal-800 border border-beige-300/80 text-xs font-bold transition-all hover:border-charcoal-400 shadow-md backdrop-blur-md cursor-pointer active:scale-95 flex items-center gap-2"
+                className="px-7 py-3.5 rounded-full bg-white hover:bg-slate-50 text-charcoal-900 border border-slate-200 text-xs font-semibold transition-all hover:border-slate-300 shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
               >
-                <Network className="w-4 h-4 text-sky-600" />
-                <span>Explore Neural Graph</span>
+                <Network className="w-4 h-4 text-slate-600" />
+                <span>Open Graph Explorer</span>
               </Link>
             </>
           ) : (
@@ -102,375 +109,277 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => openAuth('investigator')}
-                className="px-8 py-4 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-beige-100 font-bold text-xs shadow-xl shadow-charcoal-900/15 transition-all flex items-center gap-2.5 active:scale-95 cursor-pointer hover:shadow-2xl"
+                className="px-7 py-3.5 rounded-full bg-charcoal-950 hover:bg-charcoal-900 text-white font-semibold text-xs shadow-md shadow-charcoal-950/10 transition-all flex items-center gap-2 active:scale-98 cursor-pointer"
               >
-                <span>Launch Investigator Console</span>
-                <ArrowRight className="w-4 h-4 text-beige-300" />
+                <span>Access Agency Portal</span>
+                <ArrowRight className="w-4 h-4 text-slate-300" />
               </button>
-              <button
-                type="button"
-                onClick={() => openAuth('investigator')}
-                className="px-8 py-4 rounded-full bg-white/80 hover:bg-white text-charcoal-800 border border-beige-300/80 text-xs font-semibold transition-all hover:border-charcoal-400 shadow-md backdrop-blur-md cursor-pointer active:scale-95"
+              <a
+                href="#live-preview"
+                className="px-7 py-3.5 rounded-full bg-white hover:bg-slate-50 text-charcoal-900 border border-slate-200 text-xs font-semibold transition-all hover:border-slate-300 shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
               >
-                Sign In with Agency ID
-              </button>
+                <Layers className="w-4 h-4 text-slate-600" />
+                <span>System Architecture</span>
+              </a>
             </>
           )}
         </div>
 
-        {/* Specialized Operational Consoles - 5 Complete Roles */}
-        <div id="roles" className="mt-16 w-full max-w-4xl p-5 sm:p-6 rounded-3xl glass-panel shadow-xl">
-          <p className="text-[11px] font-mono uppercase text-charcoal-500 font-bold tracking-wider text-left mb-3.5 px-2">
-            Select Your Specialized Operational Console:
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {/* Investigator Card */}
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Investigator
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-sky-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Suspect graphs, cases & evidence timelines.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Access</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openAuth('investigator')}
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Investigator
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-sky-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Suspect graphs, cases & evidence timelines.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Sign In</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </button>
-            )}
-
-            {/* Analyst Card */}
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Analyst
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Money mule flows & circular loop anomalies.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Access</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openAuth('analyst')}
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Analyst
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Money mule flows & circular loop anomalies.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Sign In</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </button>
-            )}
-
-            {/* Police Station Card */}
-            {user ? (
-              <Link
-                href="/police"
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Police Station
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-cyan-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    File official FIRs with AI OCR & live alerts.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Access</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openAuth('police_station')}
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Police Station
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-cyan-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    File official FIRs with AI OCR & live alerts.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Sign In</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </button>
-            )}
-
-            {/* HR Onboarding Card */}
-            {user ? (
-              <Link
-                href="/hr"
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      HR Directorate
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-amber-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Personnel hiring, credentials & station roles.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Access</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openAuth('hr')}
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      HR Directorate
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-amber-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Personnel hiring, credentials & station roles.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Sign In</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </button>
-            )}
-
-            {/* Admin Card */}
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Administrator
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-purple-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Compliance audit trails & system controls.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Access</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openAuth('admin')}
-                className="p-3.5 rounded-2xl bg-white/70 hover:bg-white border border-beige-300/70 hover:border-charcoal-400 text-left transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-charcoal-900 group-hover:text-charcoal-950 transition-colors">
-                      Administrator
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-purple-600" />
-                  </div>
-                  <p className="text-[10px] text-charcoal-600 mt-1.5 leading-relaxed">
-                    Compliance audit trails & system controls.
-                  </p>
-                </div>
-                <span className="text-[9px] font-mono text-charcoal-500 font-bold mt-2 flex items-center gap-0.5">
-                  <span>Sign In</span>
-                  <ChevronRight className="w-3 h-3 text-charcoal-400" />
-                </span>
-              </button>
-            )}
+        {/* High-Level Credibility Metrics */}
+        <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl pt-8 border-t border-slate-200/70 text-left">
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+            <div className="text-xl font-extrabold text-charcoal-950 font-mono">10 Patterns</div>
+            <div className="text-[11px] text-slate-500 font-medium mt-0.5">Automated Anomaly Rules</div>
+          </div>
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+            <div className="text-xl font-extrabold text-charcoal-950 font-mono">Sec. 63 BSA</div>
+            <div className="text-[11px] text-slate-500 font-medium mt-0.5">Section 65B IEA Certified</div>
+          </div>
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+            <div className="text-xl font-extrabold text-charcoal-950 font-mono">Multi-Modal</div>
+            <div className="text-[11px] text-slate-500 font-medium mt-0.5">FIR, CDR & Banking Streams</div>
+          </div>
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+            <div className="text-xl font-extrabold text-charcoal-950 font-mono">AES-128</div>
+            <div className="text-[11px] text-slate-500 font-medium mt-0.5">Biometric Identity Vault</div>
           </div>
         </div>
       </section>
 
-      {/* Capabilities Section */}
-      <section id="capabilities" className="py-20 px-6 max-w-6xl mx-auto border-t border-beige-300/60">
-        <div className="text-center mb-14">
-          <h2 className="text-xs font-mono uppercase text-charcoal-500 font-bold tracking-wider">
-            Engineered For Law Enforcement & Intelligence Units
+      {/* Live Case Intelligence Product Teaser Window */}
+      <section id="live-preview" className="py-8 px-6 max-w-6xl mx-auto w-full">
+        <div className="rounded-3xl bg-white border border-slate-200/90 shadow-xl overflow-hidden">
+          {/* Header Bar */}
+          <div className="px-6 py-4 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
+              </div>
+              <span className="text-xs font-mono font-bold text-slate-700">
+                CASE: CR-2026-00124 • Operation Nightfall (Hawala Corridor)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold uppercase">
+                Active Surveillance
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-[10px] font-mono font-bold">
+                50+ Entities Connected
+              </span>
+            </div>
+          </div>
+
+          {/* Body Interactive Snapshot */}
+          <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Column 1: Suspect & Entity Resolution */}
+            <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/70 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-charcoal-900 flex items-center gap-2">
+                  <Users className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Primary Target Profile</span>
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">
+                  Risk Score: 94%
+                </span>
+              </div>
+              <div className="space-y-1 text-xs">
+                <div className="font-bold text-charcoal-950 text-sm">Rajesh Verma (Alias: RV / Cargo Raja)</div>
+                <div className="text-[11px] text-slate-500 font-mono">PAN: ABCPV9182K • Phone: +91 98201 44891</div>
+                <div className="text-[11px] text-slate-600 pt-1">
+                  Key link between Mumbai freight terminal and 6 offshore shell factoring firms.
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-medium text-slate-500">
+                <span>Linked FIRs: 3 Official Filings</span>
+                <span className="text-slate-900 font-semibold">4 Articulation Hops</span>
+              </div>
+            </div>
+
+            {/* Column 2: Financial Hawala Anomaly */}
+            <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/70 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-charcoal-900 flex items-center gap-2">
+                  <Landmark className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Financial Flow Anomaly</span>
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                  Smurfing Detected
+                </span>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200 font-mono text-[11px] space-y-1">
+                  <div className="flex justify-between text-slate-600">
+                    <span>ACC-918237 → ACC-102938</span>
+                    <span className="font-bold text-charcoal-950">₹ 48,500.00</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>ACC-771239 → ACC-102938</span>
+                    <span className="font-bold text-charcoal-950">₹ 49,000.00</span>
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-600">
+                  Deliberate sub-₹50,000 deposits aggregating to ₹1.48 Cr to evade mandatory PAN reporting.
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-medium text-slate-500">
+                <span>Dispersal Window: &lt; 24h</span>
+                <span className="text-emerald-700 font-semibold">96% Loop Confidence</span>
+              </div>
+            </div>
+
+            {/* Column 3: Legal & Provenance Certificate */}
+            <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/70 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-charcoal-900 flex items-center gap-2">
+                  <Scale className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Court-Admissible Dossier</span>
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
+                  SHA-256 Validated
+                </span>
+              </div>
+              <div className="space-y-1 text-xs">
+                <div className="font-mono text-[11px] text-slate-500 truncate">
+                  DIGEST: 8f9a2bc41d...6e7a8b
+                </div>
+                <div className="text-[11px] text-slate-600 leading-relaxed pt-1">
+                  Automated Section 63 Bharatiya Sakshya Adhiniyam certificate with full evidentiary chain of custody.
+                </div>
+              </div>
+              <div className="pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => openAuth('investigator')}
+                  className="w-full py-2 rounded-xl bg-charcoal-950 hover:bg-charcoal-900 text-white text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>Examine Case Dossier</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Core Capabilities Section */}
+      <section id="capabilities" className="py-20 px-6 max-w-6xl mx-auto border-t border-slate-200/70">
+        <div className="text-center mb-12">
+          <h2 className="text-xs font-mono uppercase text-slate-500 font-bold tracking-wider">
+            Operational Capabilities
           </h2>
-          <p className="text-2xl sm:text-3xl font-extrabold text-charcoal-950 mt-2">
-            Four Pillars of Connected Investigative Power
+          <p className="text-2xl sm:text-3xl font-extrabold text-charcoal-950 mt-1.5">
+            Engineered for Modern Intelligence Workflows
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1 */}
-          <div className="p-6 rounded-3xl glass-card hover:border-charcoal-400 hover:shadow-xl hover:-translate-y-1 transition-all space-y-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-charcoal-900 flex items-center justify-center text-beige-100 shadow-md">
-              <Network className="w-5 h-5 text-beige-300" />
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-md transition space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 text-charcoal-900 flex items-center justify-center shadow-xs">
+              <Network className="w-5 h-5 text-slate-800" />
             </div>
-            <h3 className="font-extrabold text-sm text-charcoal-950">Multi-Entity Graph Analytics</h3>
-            <p className="text-xs text-charcoal-600 leading-relaxed">
-              Resolve polymorphic entities across burner phones, corporate shells, and physical safehouses.
+            <h3 className="font-bold text-sm text-charcoal-950">Multi-Entity Graph Analytics</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Resolve polymorphic entities across phone numbers, corporate shell structures, and physical safehouses.
             </p>
           </div>
 
           {/* Card 2 */}
-          <div className="p-6 rounded-3xl glass-card hover:border-charcoal-400 hover:shadow-xl hover:-translate-y-1 transition-all space-y-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-charcoal-900 flex items-center justify-center text-beige-100 shadow-md">
-              <AlertTriangle className="w-5 h-5 text-beige-300" />
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-md transition space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 text-charcoal-900 flex items-center justify-center shadow-xs">
+              <AlertTriangle className="w-5 h-5 text-slate-800" />
             </div>
-            <h3 className="font-extrabold text-sm text-charcoal-950">10-Rule Anomaly Engine</h3>
-            <p className="text-xs text-charcoal-600 leading-relaxed">
-              Real-time detection of circular money flows, rapid transit hops, and high-frequency communication bursts.
+            <h3 className="font-bold text-sm text-charcoal-950">10-Rule Anomaly Engine</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Surveillance tracking for circular hawala loops, rapid money chains, pass-through mules, and nocturnal calls.
             </p>
           </div>
 
           {/* Card 3 */}
-          <div className="p-6 rounded-3xl glass-card hover:border-charcoal-400 hover:shadow-xl hover:-translate-y-1 transition-all space-y-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-charcoal-900 flex items-center justify-center text-beige-100 shadow-md">
-              <FileText className="w-5 h-5 text-beige-300" />
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-md transition space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 text-charcoal-900 flex items-center justify-center shadow-xs">
+              <FileCheck className="w-5 h-5 text-slate-800" />
             </div>
-            <h3 className="font-extrabold text-sm text-charcoal-950">Human-in-the-Loop OCR</h3>
-            <p className="text-xs text-charcoal-600 leading-relaxed">
-              Upload multi-page FIRs and court documents. Review AI proposals before committing to the master graph.
+            <h3 className="font-bold text-sm text-charcoal-950">Human-in-the-Loop OCR</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Ingest multi-page FIRs and bank statements. Review extracted entities and relations before graph commit.
             </p>
           </div>
 
           {/* Card 4 */}
-          <div className="p-6 rounded-3xl glass-card hover:border-charcoal-400 hover:shadow-xl hover:-translate-y-1 transition-all space-y-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-charcoal-900 flex items-center justify-center text-beige-100 shadow-md">
-              <Bot className="w-5 h-5 text-beige-300" />
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-md transition space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 text-charcoal-900 flex items-center justify-center shadow-xs">
+              <Scale className="w-5 h-5 text-slate-800" />
             </div>
-            <h3 className="font-extrabold text-sm text-charcoal-950">Investigative Copilot</h3>
-            <p className="text-xs text-charcoal-600 leading-relaxed">
-              Natural language intelligence assistant with citation-backed evidence chains and judicial export reports.
+            <h3 className="font-bold text-sm text-charcoal-950">Court Dossier Generator</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Generate structured, Section 63 BSA / 65B IEA compliant evidence dossiers with cryptographic hashes.
             </p>
           </div>
         </div>
       </section>
 
-      {/* How it Works / Architecture Section */}
-      <section id="how-it-works" className="py-20 px-6 max-w-6xl mx-auto border-t border-beige-300/60">
-        <div className="text-center mb-14">
-          <h2 className="text-xs font-mono uppercase text-charcoal-500 font-bold tracking-wider">
-            Evidence-to-Action Pipeline
+      {/* How it Works / Tactical Pipeline */}
+      <section id="pipeline" className="py-20 px-6 max-w-6xl mx-auto border-t border-slate-200/70">
+        <div className="text-center mb-12">
+          <h2 className="text-xs font-mono uppercase text-slate-500 font-bold tracking-wider">
+            Evidence-to-Action Architecture
           </h2>
-          <p className="text-2xl sm:text-3xl font-extrabold text-charcoal-950 mt-2">
-            How CIRCUIT Processes Intelligence
+          <p className="text-2xl sm:text-3xl font-extrabold text-charcoal-950 mt-1.5">
+            How CIRCUIT Processes Case Intelligence
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-3xl glass-panel space-y-3 shadow-md">
-            <span className="font-mono text-xs text-charcoal-400 font-bold">01 / INGESTION</span>
-            <h4 className="font-bold text-base text-charcoal-950">Unstructured Document Ingestion</h4>
-            <p className="text-xs text-charcoal-600 leading-relaxed">
-              Secure multi-format ingestion of scanned FIRs, RTGS/NEFT transaction ledgers, and CDR phone dumps.
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 space-y-2.5 shadow-xs">
+            <span className="font-mono text-xs text-slate-400 font-bold">STAGE 01</span>
+            <h4 className="font-bold text-sm text-charcoal-950">Multi-Modal Ingestion</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Upload scanned FIRs, RTGS/NEFT transaction ledgers, and telecommunication CDR call logs into a secure vault.
             </p>
           </div>
-          <div className="p-6 rounded-3xl glass-panel space-y-3 shadow-md">
-            <span className="font-mono text-xs text-charcoal-400 font-bold">02 / RESOLUTION</span>
-            <h4 className="font-bold text-base text-charcoal-950">AI Resolution & Graphing</h4>
-            <p className="text-xs text-charcoal-600 leading-relaxed">
-              Named Entity Recognition (NER) extracts key entities and constructs multidimensional topological graphs.
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 space-y-2.5 shadow-xs">
+            <span className="font-mono text-xs text-slate-400 font-bold">STAGE 02</span>
+            <h4 className="font-bold text-sm text-charcoal-950">Entity Resolution & Topology</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Extract identifiers (PAN, Aadhaar, IMEI, vehicle plates) and construct interconnected topological networks.
             </p>
           </div>
-          <div className="p-6 rounded-3xl glass-panel space-y-3 shadow-md">
-            <span className="font-mono text-xs text-charcoal-400 font-bold">03 / ENFORCEMENT</span>
-            <h4 className="font-bold text-base text-charcoal-950">Alerts & Tactical Case Reports</h4>
-            <p className="text-xs text-charcoal-600 leading-relaxed">
-              Automatic alert dispatches notify station leads and investigators with actionable judicial evidence trails.
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 space-y-2.5 shadow-xs">
+            <span className="font-mono text-xs text-slate-400 font-bold">STAGE 03</span>
+            <h4 className="font-bold text-sm text-charcoal-950">Threat Alerts & Judicial Export</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Trigger instant anomaly alerts on pass-through accounts and export statutory case dossiers for prosecution.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Security & Trust Section */}
-      <section id="security" className="py-20 px-6 max-w-6xl mx-auto border-t border-beige-300/60 text-center">
-        <div className="max-w-2xl mx-auto space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-charcoal-900 text-beige-100 flex items-center justify-center mx-auto shadow-md">
-            <Lock className="w-6 h-6 text-beige-300" />
+      {/* Security & Access Controls */}
+      <section id="security" className="py-20 px-6 max-w-6xl mx-auto border-t border-slate-200/70 text-center">
+        <div className="max-w-2xl mx-auto space-y-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-charcoal-950 text-white flex items-center justify-center mx-auto shadow-md">
+            <Lock className="w-5 h-5 text-slate-300" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal-950">
             Enterprise Law Enforcement Security
           </h2>
-          <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed">
-            Strict Role-Based Access Controls (RBAC), immutable audit logging on every action, and end-to-end encrypted storage pipelines compliant with intelligence standards.
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Strict Role-Based Access Controls (RBAC), immutable audit logging on every action, and Fernet AES-encrypted biometric vaults built to strict intelligence standards.
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto py-8 px-6 border-t border-beige-300/60 bg-white/40 text-center text-xs text-charcoal-500">
+      <footer className="mt-auto py-8 px-6 border-t border-slate-200 bg-white text-center text-xs text-slate-500">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 CIRCUIT AI Intelligence Platform. All rights reserved.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-charcoal-950">CIRCUIT 2.0</span>
+            <span>• Criminal Intelligence Platform</span>
+          </div>
+          <div className="flex items-center gap-6 font-medium">
             <button
               type="button"
               onClick={() => openAuth('investigator')}
@@ -478,8 +387,9 @@ export default function HomePage() {
             >
               Portal Login
             </button>
-            <Link href="/explorer" className="hover:text-charcoal-950">Neural Explorer</Link>
+            <Link href="/explorer" className="hover:text-charcoal-950">Graph Explorer</Link>
             <Link href="/fir-track" className="hover:text-charcoal-950">FIR Registry</Link>
+            <Link href="/reports" className="hover:text-charcoal-950">Court Reports</Link>
           </div>
         </div>
       </footer>
