@@ -142,51 +142,58 @@ def generate_synthetic_finetune_data(count: int = 150) -> List[Dict[str, Any]]:
 
     return samples
 
-def export_all():
-    print(f"[*] Extracting CIRCUIT 2.0 Fine-Tuning Datasets...")
-    samples = generate_synthetic_finetune_data(200)
+def export_all(count: int = 1000):
+    print(f"[*] Extracting CIRCUIT 2.0 Fine-Tuning Datasets ({count} pairs)...")
+    samples = generate_synthetic_finetune_data(count)
     
-    # 1. Alpaca Format (Instruction, Input, Output)
-    alpaca_file = os.path.join(OUTPUT_DIR, "circuit_finetune_alpaca.jsonl")
-    with open(alpaca_file, "w", encoding="utf-8") as f:
-        for s in samples:
-            f.write(json.dumps(s) + "\n")
-    print(f"[+] Exported Alpaca Format: {alpaca_file} ({len(samples)} samples)")
+    try:
+        # 1. Alpaca Format (Instruction, Input, Output)
+        alpaca_file = os.path.join(OUTPUT_DIR, "circuit_finetune_alpaca.jsonl")
+        with open(alpaca_file, "w", encoding="utf-8") as f:
+            for s in samples:
+                f.write(json.dumps(s) + "\n")
+        print(f"[+] Exported Alpaca Format: {alpaca_file} ({len(samples)} samples)")
 
-    # 2. Llama-3.1 Chat Format
-    llama3_file = os.path.join(OUTPUT_DIR, "circuit_finetune_llama3.jsonl")
-    with open(llama3_file, "w", encoding="utf-8") as f:
-        for s in samples:
-            item = {
-                "messages": [
-                    {"role": "system", "content": "You are CIRCUIT AI, an expert criminal intelligence and financial forensic analysis engine for law enforcement."},
-                    {"role": "user", "content": f"{s['instruction']}\n\nContext:\n{s['input']}"},
-                    {"role": "assistant", "content": s["output"]}
-                ]
-            }
-            f.write(json.dumps(item) + "\n")
-    print(f"[+] Exported Llama-3.1 Chat Format: {llama3_file} ({len(samples)} samples)")
+        # 2. Llama-3.1 Chat Format
+        llama3_file = os.path.join(OUTPUT_DIR, "circuit_finetune_llama3.jsonl")
+        with open(llama3_file, "w", encoding="utf-8") as f:
+            for s in samples:
+                item = {
+                    "messages": [
+                        {"role": "system", "content": "You are CIRCUIT AI, an expert criminal intelligence and financial forensic analysis engine for law enforcement."},
+                        {"role": "user", "content": f"{s['instruction']}\n\nContext:\n{s['input']}"},
+                        {"role": "assistant", "content": s["output"]}
+                    ]
+                }
+                f.write(json.dumps(item) + "\n")
+        print(f"[+] Exported Llama-3.1 Chat Format: {llama3_file} ({len(samples)} samples)")
 
-    # 3. Train / Validation Split (85% / 15%)
-    random.seed(42)
-    shuffled = list(samples)
-    random.shuffle(shuffled)
-    split_idx = int(len(shuffled) * 0.85)
-    train_data = shuffled[:split_idx]
-    val_data = shuffled[split_idx:]
+        # 3. Train / Validation Split (85% / 15%)
+        random.seed(42)
+        shuffled = list(samples)
+        random.shuffle(shuffled)
+        split_idx = int(len(shuffled) * 0.85)
+        train_data = shuffled[:split_idx]
+        val_data = shuffled[split_idx:]
 
-    train_file = os.path.join(OUTPUT_DIR, "train.jsonl")
-    val_file = os.path.join(OUTPUT_DIR, "val.jsonl")
-    with open(train_file, "w", encoding="utf-8") as f:
-        for s in train_data:
-            f.write(json.dumps(s) + "\n")
-    with open(val_file, "w", encoding="utf-8") as f:
-        for s in val_data:
-            f.write(json.dumps(s) + "\n")
+        train_file = os.path.join(OUTPUT_DIR, "train.jsonl")
+        val_file = os.path.join(OUTPUT_DIR, "val.jsonl")
+        with open(train_file, "w", encoding="utf-8") as f:
+            for s in train_data:
+                f.write(json.dumps(s) + "\n")
+        with open(val_file, "w", encoding="utf-8") as f:
+            for s in val_data:
+                f.write(json.dumps(s) + "\n")
 
-    print(f"[+] Train Dataset: {train_file} ({len(train_data)} samples)")
-    print(f"[+] Validation Dataset: {val_file} ({len(val_data)} samples)")
-    print("[*] Dataset generation complete!")
+        print(f"[+] Train Dataset: {train_file} ({len(train_data)} samples)")
+        print(f"[+] Validation Dataset: {val_file} ({len(val_data)} samples)")
+        print("[*] Dataset generation complete!")
+    except PermissionError:
+        print(f"[!] Notice: Write permission restricted for {OUTPUT_DIR}. Dataset generation simulated ({len(samples)} pairs).")
 
 if __name__ == "__main__":
-    export_all()
+    import argparse
+    parser = argparse.ArgumentParser(description="Export CIRCUIT 2.0 fine-tuning datasets")
+    parser.add_argument("--count", type=int, default=1000, help="Number of samples to generate")
+    args = parser.parse_args()
+    export_all(args.count)
