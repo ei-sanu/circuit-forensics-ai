@@ -232,6 +232,7 @@ export function Sidebar() {
           icon: FileStack,
           items: [
             { label: 'Reports & Dossiers', href: '/reports', icon: FileSpreadsheet },
+            { label: 'System Architecture', href: '/architecture', icon: Layers },
             { label: 'Settings', href: '/settings', icon: Settings },
           ],
         },
@@ -276,6 +277,7 @@ export function Sidebar() {
           icon: FileStack,
           items: [
             { label: 'Court Dossiers', href: '/reports', icon: FileSpreadsheet },
+            { label: 'System Architecture', href: '/architecture', icon: Layers },
             { label: 'Settings', href: '/settings', icon: Settings },
           ],
         },
@@ -330,6 +332,7 @@ export function Sidebar() {
         icon: FileStack,
         items: [
           { label: 'Reports & Dossiers', href: '/reports', icon: FileSpreadsheet },
+          { label: 'System Architecture', href: '/architecture', icon: Layers },
           { label: 'HR User Approvals', href: '/settings?tab=users', icon: UserPlus },
           { label: 'System Settings', href: '/settings', icon: Settings },
         ],

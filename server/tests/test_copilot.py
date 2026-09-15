@@ -19,3 +19,22 @@ def test_query_copilot_alias(client, investigator_token):
     )
     assert response.status_code == 200
     assert "answer" in response.json()
+
+def test_copilot_model_status(client, investigator_token):
+    response = client.get(
+        "/api/copilot/model-status",
+        headers={"Authorization": f"Bearer {investigator_token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "model_name" in data
+    assert "active_engine" in data
+    assert "training_samples_count" in data
+    assert len(data.get("supported_tasks", [])) >= 3
+
+def test_copilot_info_public(client):
+    response = client.get("/api/copilot/info")
+    assert response.status_code == 200
+    data = response.json()
+    assert "model_name" in data
+    assert "checkpoint_available" in data

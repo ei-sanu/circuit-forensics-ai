@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional
 from app.integrations.ml_client import ml_client
 from app.services.audit_service import audit_service
 from app.services.graph_service import graph_service
+from app.ml.finetuned_llm import finetuned_llm_client
 
 logger = logging.getLogger("CIRCUIT.CopilotService")
 
@@ -28,5 +29,9 @@ class CopilotService:
             )
 
         return res
+
+    async def get_model_status(self) -> Dict[str, Any]:
+        """Return fine-tuned model runtime and training dataset status."""
+        return await finetuned_llm_client.get_status()
 
 copilot_service = CopilotService()

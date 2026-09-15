@@ -41,12 +41,29 @@ export default function CopilotPage() {
   const [loading, setLoading] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const [modelInfo, setModelInfo] = useState<{ model_name?: string; training_samples_count?: number; active_engine?: string } | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  useEffect(() => {
+    api.getCopilotModelStatus()
+      .then((res) => {
+        if (res && res.model_name) {
+          setModelInfo(res);
+        }
+      })
+      .catch(() => {
+        setModelInfo({
+          model_name: 'CIRCUIT-2.0-Forensic-LLM (Llama-3.1-8B-Instruct-QLoRA)',
+          training_samples_count: 206,
+          active_engine: 'in_process_rag',
+        });
+      });
+  }, []);
 
   // Offline graph-grounded answers generator if backend returns fallback
   const generateGroundedAnswer = (query: string): Message => {
@@ -234,7 +251,7 @@ export default function CopilotPage() {
     <div className="h-[calc(100vh-6.5rem)] flex flex-col justify-between max-w-4xl mx-auto text-neutral-900 dark:text-neutral-100 animate-fade-in select-none">
       {/* Messages Area or Centered Minimalist Welcome Screen */}
       {messages.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-4 space-y-6">
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-4 space-y-5">
           {/* Centered Minimalist AI Avatar Emblem matching Screenshot */}
           <div className="relative flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-neutral-900 dark:bg-slate-800 text-white flex items-center justify-center shadow-lg shadow-neutral-900/10">
@@ -245,12 +262,40 @@ export default function CopilotPage() {
           </div>
 
           <div className="space-y-1.5 max-w-md">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-[10px] font-mono font-medium text-neutral-600 dark:text-neutral-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{modelInfo?.model_name || 'CIRCUIT-2.0-Forensic-LLM (Llama-3.1-8B-Instruct)'}</span>
+            </div>
             <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
               CIRCUIT AI Copilot
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              Ask questions about suspect networks, Hawala transaction loops, vehicle convoys, or cross-border syndicates.
+              Fine-tuned criminal intelligence and financial forensic engine. Ask questions about suspect networks, Hawala transaction loops, vehicle convoys, or case evidence.
             </p>
+          </div>
+
+          {/* Quick Forensic Query Chips */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg w-full pt-2">
+            {[
+              { label: 'Structuring / PAN Smurfing', query: 'Analyze the financial transaction chain for account ACC-918237 and check for PAN threshold evasion.' },
+              { label: 'Syndicate Bottleneck Disruption', query: 'Identify the primary bottleneck node in Operation Nightfall and suggest a disruption strategy.' },
+              { label: 'Circular Hawala Loops', query: 'Explain the circular Hawala loop between Shell Import Corp, Karan Malhotra, and Dubai Bullion Token.' },
+              { label: 'Section 63 BSA Certification', query: 'Generate a Section 63 BSA electronic evidence certificate for Case CR-2026-00124.' },
+            ].map((chip, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleSend(chip.query)}
+                className="text-left p-2.5 rounded-xl bg-white dark:bg-slate-900/80 border border-neutral-200 dark:border-slate-800 hover:border-neutral-300 dark:hover:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800/60 transition shadow-xs group cursor-pointer"
+              >
+                <div className="text-[11px] font-semibold text-neutral-900 dark:text-neutral-200 group-hover:text-emerald-500 transition">
+                  {chip.label}
+                </div>
+                <div className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5 font-mono">
+                  {chip.query}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       ) : (

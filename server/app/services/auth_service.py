@@ -12,7 +12,7 @@ from app.core.permissions import Role
 from app.models.user import User
 from app.services.audit_service import audit_service
 from app.services.biometric_service import biometric_service
-from app.schemas.auth import LoginDto, RegisterDto
+from app.schemas.auth import LoginDto, RegisterDto, ChangePasswordDto, AdminResetPasswordDto
 
 logger = logging.getLogger("CIRCUIT.AuthService")
 
@@ -416,5 +416,106 @@ class AuthService:
             details={"rejectedUser": user_dict.get("email"), "role": user_dict.get("role")},
         )
         return user_dict
+
+    async def change_password(
+        self,
+        dto: ChangePasswordDto,
+        user: Dict[str, Any],
+        ip: Optional[str] = None,
+        user_agent: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Change authenticated user password and update PostgreSQL / Supabase Database directly."""
+        user_id = user.get("userId") or user.get("id") or user.get("sub")
+        email = user.get("email")
+
+        if not user_id and not email:
+            raise UnauthorizedError("Unable to identify current user from token.")
+
+        maker = get_session_maker()
+        async with maker() as session:
+            # Query by user_id or email
+            query = select(User).where((User.user_id == user_id) | (User.email == email))
+            res = await session.execute(query)
+            db_user = res.scalar_one_or_none()
+
+            if not db_user:
+                await self.seed_default_users()
+                res = await session.execute(query)
+                db_user = res.scalar_one_or_none()
+
+            if not db_user:
+                raise NotFoundError("User account not found in database.")
+
+            if not verify_password(dto.currentPassword, db_user.password_hash):
+                raise UnauthorizedError("Current password is incorrect.")
+
+            if len(dto.newPassword) < 6:
+                raise ConflictError("New password must be at least 6 characters long.")
+
+            # Hash and update in DB
+            db_user.password_hash = hash_password(dto.newPassword)
+            db_user.updated_at = datetime.now(timezone.utc)
+            await session.commit()
+            await session.refresh(db_user)
+
+            user_dict = db_user.to_dict()
+
+        await audit_service.log(
+            user_id=db_user.user_id,
+            user_email=db_user.email,
+            action="CHANGE_PASSWORD",
+            resource_type="user",
+            resource_id=db_user.user_id,
+            details={"status": "success", "email": db_user.email},
+            ip_address=ip,
+            user_agent=user_agent,
+        )
+
+        return {
+            "status": "success",
+            "message": "Password successfully updated in Supabase Database.",
+            "userId": db_user.user_id,
+            "email": db_user.email,
+        }
+
+    async def admin_reset_password(
+        self,
+        user_id: str,
+        dto: AdminResetPasswordDto,
+        admin_user: Dict[str, Any],
+        ip: Optional[str] = None,
+        user_agent: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Admin resets an officer's password directly in PostgreSQL / Supabase Database."""
+        maker = get_session_maker()
+        async with maker() as session:
+            res = await session.execute(
+                select(User).where((User.user_id == user_id) | (User.email == user_id))
+            )
+            db_user = res.scalar_one_or_none()
+            if not db_user:
+                raise NotFoundError(f"User {user_id} not found in database.")
+
+            db_user.password_hash = hash_password(dto.newPassword)
+            db_user.updated_at = datetime.now(timezone.utc)
+            await session.commit()
+            await session.refresh(db_user)
+
+        await audit_service.log(
+            user_id=admin_user.get("userId") or "admin",
+            user_email=admin_user.get("email") or "admin@circuit.gov",
+            action="ADMIN_RESET_PASSWORD",
+            resource_type="user",
+            resource_id=user_id,
+            details={"targetUser": db_user.email, "role": db_user.role},
+            ip_address=ip,
+            user_agent=user_agent,
+        )
+
+        return {
+            "status": "success",
+            "message": f"Password reset for {db_user.email} in database.",
+            "userId": db_user.user_id,
+        }
 
 auth_service = AuthService()

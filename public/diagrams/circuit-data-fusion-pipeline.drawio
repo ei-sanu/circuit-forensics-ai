@@ -1,0 +1,123 @@
+<mxfile host="app.diagrams.net" modified="2026-09-15T16:55:00.000Z" agent="Antigravity" version="24.0.0" type="device">
+  <diagram id="circuit-data-fusion" name="CIRCUIT Data Fusion Pipeline">
+    <mxGraphModel dx="1422" dy="980" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- === LEFT: INPUT SOURCES (BLUE CARDS) === -->
+        <mxCell id="in_fir" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;FIR Records&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;(Police Stations)&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 11px; opacity: 0.85;&quot;&gt;FIRs, Case Files, Chargesheets&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;shadow=1;arcSize=12;align=left;spacingLeft=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="260" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="in_cdr" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Call Detail&lt;br/&gt;Records - CDR&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;(Telecom Data)&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 11px; opacity: 0.85;&quot;&gt;Call logs, Location, Contacts&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;shadow=1;arcSize=12;align=left;spacingLeft=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="260" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="in_bank" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Bank &amp; UPI&lt;br/&gt;Transactions&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;(Financial Data)&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 11px; opacity: 0.85;&quot;&gt;Transactions, Beneficiaries, Payment Patterns&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;shadow=1;arcSize=12;align=left;spacingLeft=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="410" width="260" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="in_cyber" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Cyber Harassment&lt;br/&gt;Complaints&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;(Multiple Stations)&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 11px; opacity: 0.85;&quot;&gt;Complaints, Social Profiles, Cross-Station Records&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;shadow=1;arcSize=12;align=left;spacingLeft=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="590" width="260" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- === TRANSFORM LABELS / PILLS === -->
+        <mxCell id="pill_nlp" value="NLP Entity&lt;br/&gt;Extraction" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#93C5FD;fontColor=#1E3A8A;fontStyle=1;fontSize=12;arcSize=24;" vertex="1" parent="1">
+          <mxGeometry x="340" y="110" width="110" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pill_netx" value="NetworkX&lt;br/&gt;Graphing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#93C5FD;fontColor=#1E3A8A;fontStyle=1;fontSize=12;arcSize=24;" vertex="1" parent="1">
+          <mxGeometry x="340" y="275" width="110" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pill_fin" value="Financial&lt;br/&gt;Pattern Matching" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#93C5FD;fontColor=#1E3A8A;fontStyle=1;fontSize=12;arcSize=24;" vertex="1" parent="1">
+          <mxGeometry x="335" y="450" width="120" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pill_cross" value="Cross-Station&lt;br/&gt;Linking" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#93C5FD;fontColor=#1E3A8A;fontStyle=1;fontSize=12;arcSize=24;" vertex="1" parent="1">
+          <mxGeometry x="340" y="635" width="110" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- === CENTER: ENTITY FUSION DIAMOND === -->
+        <mxCell id="node_fusion" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Entity&lt;br/&gt;Fusion&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#7C3AED;strokeColor=#6D28D9;fontColor=#FFFFFF;shadow=1;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="340" width="150" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- === HUMAN IN THE LOOP (ORANGE RECTANGLE) === -->
+        <mxCell id="node_hitl" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Human-in-the-Loop&lt;br/&gt;Review &amp;&lt;br/&gt;Blockchain Hash&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EA580C;strokeColor=#C2410C;strokeWidth=2;dashed=1;dashPattern=6 3;fontColor=#FFFFFF;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="720" y="340" width="170" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- === RIGHT: OUTPUTS (GREEN CARDS) === -->
+        <mxCell id="out_graph" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Connected&lt;br/&gt;Syndicates Graph&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;(Relationships &amp;&lt;br/&gt;Networks)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#059669;strokeColor=#047857;fontColor=#FFFFFF;shadow=1;arcSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="980" y="150" width="220" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="out_alerts" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Suspicious&lt;br/&gt;Anomaly Alerts&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;(Real-time Notifications)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#059669;strokeColor=#047857;fontColor=#FFFFFF;shadow=1;arcSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="980" y="345" width="220" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="out_dossier" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;BNS/BSA&lt;br/&gt;Court-Ready&lt;br/&gt;Dossier&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;(Legal Reports &amp;&lt;br/&gt;Evidence)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#059669;strokeColor=#047857;fontColor=#FFFFFF;shadow=1;arcSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="980" y="550" width="220" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- === CONNECTORS: INPUTS -> FUSION === -->
+        <mxCell id="e_fir" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=classic;" edge="1" parent="1" source="pill_nlp" target="node_fusion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_in_fir" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=none;" edge="1" parent="1" source="in_fir" target="pill_nlp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_cdr" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=classic;" edge="1" parent="1" source="pill_netx" target="node_fusion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_in_cdr" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=none;" edge="1" parent="1" source="in_cdr" target="pill_netx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_bank" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=classic;" edge="1" parent="1" source="pill_fin" target="node_fusion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_in_bank" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=none;" edge="1" parent="1" source="in_bank" target="pill_fin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_cyber" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=classic;" edge="1" parent="1" source="pill_cross" target="node_fusion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_in_cyber" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=none;" edge="1" parent="1" source="in_cyber" target="pill_cross">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- === CONNECTOR: FUSION -> HITL === -->
+        <mxCell id="e_fusion_hitl" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1E3A8A;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="node_fusion" target="node_hitl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- === CONNECTORS: HITL -> OUTPUTS === -->
+        <mxCell id="e_hitl_graph" value="Verifies &amp; Locks" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=classic;fontSize=12;fontStyle=1;fontColor=#1E3A8A;labelBackgroundColor=#DBEAFE;labelBorderColor=#93C5FD;" edge="1" parent="1" source="node_hitl" target="out_graph">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="805" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e_hitl_alerts" value="Surfaces" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=classic;fontSize=12;fontStyle=1;fontColor=#1E3A8A;labelBackgroundColor=#DBEAFE;labelBorderColor=#93C5FD;" edge="1" parent="1" source="node_hitl" target="out_alerts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_hitl_dossier" value="Generates" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#1E3A8A;strokeWidth=2.5;endArrow=classic;fontSize=12;fontStyle=1;fontColor=#1E3A8A;labelBackgroundColor=#DBEAFE;labelBorderColor=#93C5FD;" edge="1" parent="1" source="node_hitl" target="out_dossier">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="805" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

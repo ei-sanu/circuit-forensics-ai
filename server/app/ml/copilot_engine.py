@@ -6,6 +6,7 @@ import httpx
 from app.core.config import settings
 from app.ml.graph_manager import GraphManager
 from app.ml.schemas import Citation, CopilotQueryRequest, CopilotQueryResponse
+from app.ml.finetuned_llm import finetuned_llm_client
 
 
 class CopilotEngine:
@@ -13,6 +14,20 @@ class CopilotEngine:
 
     def __init__(self, graph_manager: Optional[GraphManager] = None):
         self.graph_manager = graph_manager or GraphManager()
+
+    def _build_graph_rag_context(self) -> str:
+        """Construct structured topological RAG context for the fine-tuned LLM."""
+        metrics = self.graph_manager.get_metrics()
+        influence = self.graph_manager.compute_influence()
+        connectors = self.graph_manager.find_hidden_connectors()
+        top3 = sorted(influence.items(), key=lambda x: x[1].score, reverse=True)[:3]
+        top_str = ", ".join(f"{nid} (Score: {comp.score})" for nid, comp in top3) if top3 else "None"
+        bottlenecks_str = ", ".join(connectors) if connectors else "None"
+        return (
+            f"Active Network Topology: {metrics.node_count} nodes, {metrics.edge_count} edges, {metrics.num_communities} clusters. "
+            f"Top Influential Nodes: {top_str}. "
+            f"Articulation Bottlenecks: {bottlenecks_str}."
+        )
 
     async def answer_query(self, req: CopilotQueryRequest) -> CopilotQueryResponse:
         query_text = req.query.strip().lower()
@@ -165,8 +180,11 @@ class CopilotEngine:
             f"Highest-scoring central coordinator in active scope: {top_node}."
         ]
 
-        analytical = (
-            "CIRCUIT Copilot integrates deterministic graph centrality algorithms with rule-based heuristics "
+        rag_context = self._build_graph_rag_context()
+        llm_response = await finetuned_llm_client.generate_response(query=req.query, graph_context=rag_context)
+
+        analytical = llm_response if llm_response else (
+            "CIRCUIT Copilot integrates fine-tuned criminal intelligence with deterministic graph centrality algorithms "
             "to answer evidentiary and network queries with full chain-of-custody citations."
         )
 
@@ -174,7 +192,7 @@ class CopilotEngine:
             intent="general_inquiry",
             direct_facts=facts,
             analytical_reading=analytical,
-            citations=[Citation(source_type="graph_context", count=1, description="Global investigative state query")],
+            citations=[Citation(source_type="finetuned_llm" if llm_response else "graph_context", count=metrics.node_count or 1, description="Fine-tuned forensic reasoning & graph context")],
             suggested_followups=[
                 "Who is the most influential suspect?",
                 "Show all alerts for this case",

@@ -38,3 +38,11 @@ class AuthResponseDto(BaseModel):
     accessToken: str
     tokenType: str = "Bearer"
     user: UserResponseDto
+
+class ChangePasswordDto(BaseModel):
+    currentPassword: str = Field(..., min_length=1, description="Current password")
+    newPassword: str = Field(..., min_length=6, description="New secure password (min 6 chars)")
+
+class AdminResetPasswordDto(BaseModel):
+    newPassword: str = Field(..., min_length=6, description="New secure password set by admin")
+

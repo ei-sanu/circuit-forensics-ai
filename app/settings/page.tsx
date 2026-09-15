@@ -11,6 +11,7 @@ import {
   Sliders,
   Bell,
   CheckCircle2,
+  AlertTriangle,
   Lock,
   RefreshCw,
   Server,
@@ -99,6 +100,45 @@ function SettingsContent() {
     inchargeRank: 'Senior Inspector / SHO',
     phone: '',
   });
+
+  // Password Management State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and confirmation do not match.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters long.');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const res = await api.changePassword({
+        currentPassword,
+        newPassword,
+      });
+      setPasswordSuccess(res.message || 'Password successfully updated in Supabase PostgreSQL Database.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setPasswordError(err.message || 'Failed to update password in database.');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
 
   // Handle URL search parameter sync
   useEffect(() => {
@@ -399,22 +439,32 @@ function SettingsContent() {
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">Security & Password Credentials</h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Update password credentials and manage multi-factor authentication security keys.
+              Update your account password and synchronize directly with the Supabase database.
             </p>
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert('Password updated successfully and synced with IAM vault.');
-            }}
-            className="space-y-4 text-xs"
-          >
+          {passwordSuccess && (
+            <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="font-semibold">{passwordSuccess}</span>
+            </div>
+          )}
+
+          {passwordError && (
+            <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-xs flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+              <span className="font-semibold">{passwordError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleChangePassword} className="space-y-4 text-xs">
             <div>
               <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Current Password</label>
               <input
                 type="password"
                 required
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="••••••••••••"
                 className="w-full p-2.5 rounded-2xl bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-neutral-900 dark:text-white focus:outline-none focus:border-blue-500"
               />
@@ -424,7 +474,9 @@ function SettingsContent() {
               <input
                 type="password"
                 required
-                placeholder="At least 8 characters"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters"
                 className="w-full p-2.5 rounded-2xl bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-neutral-900 dark:text-white focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -433,15 +485,18 @@ function SettingsContent() {
               <input
                 type="password"
                 required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter new password"
                 className="w-full p-2.5 rounded-2xl bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-neutral-900 dark:text-white focus:outline-none focus:border-blue-500"
               />
             </div>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold text-xs shadow-sm hover:opacity-90 transition cursor-pointer"
+              disabled={passwordLoading}
+              className="px-6 py-2.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold text-xs shadow-sm hover:opacity-90 transition cursor-pointer disabled:opacity-50"
             >
-              Update Password
+              {passwordLoading ? 'Updating Database...' : 'Update Password in Database'}
             </button>
           </form>
         </div>

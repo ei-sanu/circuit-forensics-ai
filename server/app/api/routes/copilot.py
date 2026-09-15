@@ -6,6 +6,16 @@ from app.schemas.copilot import CopilotQueryDto
 
 router = APIRouter(prefix="/copilot", tags=["Investigative Copilot"])
 
+@router.get("/model-status", summary="Get status of Fine-Tuned Llama-3.1 model and training datasets")
+async def get_model_status_endpoint(
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    return await copilot_service.get_model_status()
+
+@router.get("/info", summary="Get Copilot system and fine-tuned model information")
+async def get_copilot_info_endpoint():
+    return await copilot_service.get_model_status()
+
 @router.post("/ask", summary="Ask AI Copilot natural-language investigative questions with citations")
 async def ask_copilot_endpoint(
     dto: CopilotQueryDto,

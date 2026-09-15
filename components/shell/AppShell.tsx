@@ -3,7 +3,6 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
-import { Topbar } from './Topbar';
 import { MatchAlertSpace } from '../notifications/MatchAlertSpace';
 import { NavigationProgressBar } from '../ui/NavigationProgressBar';
 
@@ -26,6 +25,7 @@ const VALID_DASHBOARD_ROUTES = [
   '/settings',
   '/police',
   '/hr',
+  '/architecture',
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -50,7 +50,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <NavigationProgressBar />
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <Topbar />
         <main key={pathname} className="flex-1 p-6 overflow-y-auto animate-page-enter">
           {children}
         </main>

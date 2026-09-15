@@ -53,7 +53,7 @@ const ACTIVITY_60_DAYS = Array.from({ length: 20 }, (_, i) => {
   return {
     dayLabel: `${day}d ago`,
     transactions: 12 + Math.floor(Math.sin(i) * 6 + i * 1.5),
-    volumeLakhs: (8.5 + Math.sin(i * 1.2) * 4 + i * 0.8).toFixed(1),
+    volumeLakhs: parseFloat((8.5 + Math.sin(i * 1.2) * 4 + i * 0.8).toFixed(1)),
     anomalies: Math.max(1, Math.floor(Math.sin(i * 2) * 3 + 2)),
   };
 }).reverse();
@@ -300,32 +300,65 @@ export default function DashboardPage() {
 
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={ACTIVITY_60_DAYS} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={ACTIVITY_60_DAYS} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
               <defs>
-                <linearGradient id="metricGradient" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="gradient-transactions" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#0284c7" stopOpacity={0.4} />
                   <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="gradient-volumeLakhs" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#059669" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#059669" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="gradient-anomalies" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#dc2626" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#dc2626" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="dayLabel" tick={{ fontSize: 10, fill: '#64748b' }} />
-              <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+              <YAxis
+                tick={{ fontSize: 10, fill: '#64748b' }}
+                tickFormatter={(val) => (activeMetricTab === 'volumeLakhs' ? `₹${val}L` : `${val}`)}
+              />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: '#0f172a',
-                  borderColor: '#334155',
-                  borderRadius: '16px',
-                  color: '#f8fafc',
-                  fontSize: '12px',
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    const val = payload[0].value;
+                    let title = 'Transactions';
+                    let formattedVal = `${val} events`;
+                    let color = '#0284c7';
+
+                    if (activeMetricTab === 'volumeLakhs') {
+                      title = 'Financial Volume';
+                      formattedVal = `₹${val} Lakhs`;
+                      color = '#059669';
+                    } else if (activeMetricTab === 'anomalies') {
+                      title = 'ML Anomalies';
+                      formattedVal = `${val} flags`;
+                      color = '#dc2626';
+                    }
+
+                    return (
+                      <div className="p-3 bg-charcoal-950 text-white rounded-2xl shadow-xl border border-charcoal-800 text-xs space-y-1">
+                        <p className="font-semibold text-charcoal-400">{label}</p>
+                        <p className="text-sm font-bold flex items-center gap-1.5" style={{ color }}>
+                          <span>{title}:</span>
+                          <span className="font-mono text-white">{formattedVal}</span>
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
               />
               <Area
                 type="monotone"
                 dataKey={activeMetricTab}
-                stroke="#0284c7"
+                stroke={activeMetricTab === 'volumeLakhs' ? '#059669' : activeMetricTab === 'anomalies' ? '#dc2626' : '#0284c7'}
                 strokeWidth={2.5}
                 fillOpacity={1}
-                fill="url(#metricGradient)"
+                fill={`url(#gradient-${activeMetricTab})`}
               />
             </AreaChart>
           </ResponsiveContainer>

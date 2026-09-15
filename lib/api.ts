@@ -102,6 +102,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(userData),
     }),
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    request<any>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  adminResetPassword: (userId: string, data: { newPassword: string }) =>
+    request<any>(`/auth/admin-reset-password/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   getProfile: () => request<any>('/auth/me'),
 
   // Biometric Facial 2-Factor Authentication
@@ -249,6 +259,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ query, caseId }),
     }),
+  getCopilotModelStatus: () => request<any>('/copilot/model-status'),
 
   // Audit Logs
   getAuditLogs: (params?: { limit?: number; skip?: number; userId?: string; action?: string }) => {

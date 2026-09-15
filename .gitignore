@@ -48,3 +48,11 @@ Thumbs.db
 *.sqlite3
 .circuit_storage/
 
+# Model Weight Binaries (Large Files)
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.gguf
+
