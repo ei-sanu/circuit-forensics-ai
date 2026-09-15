@@ -281,24 +281,42 @@ def run_actual_training(args, train_samples, val_samples):
     train_ds = Dataset.from_list([{"text": format_sample(s)} for s in train_samples])
     val_ds = Dataset.from_list([{"text": format_sample(s)} for s in val_samples])
 
-    from trl import SFTConfig
-    training_args = SFTConfig(
-        output_dir=args.output_dir,
-        num_train_epochs=args.epochs,
-        per_device_train_batch_size=args.batch_size,
-        gradient_accumulation_steps=args.grad_accum,
-        gradient_checkpointing=True,
-        learning_rate=args.lr,
-        logging_steps=10,
-        eval_strategy="epoch",
-        save_strategy="epoch",
-        fp16=False,
-        bf16=False,
-        optim="paged_adamw_8bit" if torch.cuda.is_available() else "adamw_torch",
-        report_to="none",
-        max_length=args.max_seq_length,
-        dataset_text_field="text",
-    )
+    try:
+        training_args = SFTConfig(
+            output_dir=args.output_dir,
+            num_train_epochs=args.epochs,
+            per_device_train_batch_size=args.batch_size,
+            gradient_accumulation_steps=args.grad_accum,
+            gradient_checkpointing=True,
+            learning_rate=args.lr,
+            logging_steps=10,
+            eval_strategy="epoch",
+            save_strategy="epoch",
+            fp16=False,
+            bf16=False,
+            optim="paged_adamw_8bit" if torch.cuda.is_available() else "adamw_torch",
+            report_to="none",
+            max_seq_length=args.max_seq_length,
+            dataset_text_field="text",
+        )
+    except TypeError:
+        training_args = SFTConfig(
+            output_dir=args.output_dir,
+            num_train_epochs=args.epochs,
+            per_device_train_batch_size=args.batch_size,
+            gradient_accumulation_steps=args.grad_accum,
+            gradient_checkpointing=True,
+            learning_rate=args.lr,
+            logging_steps=10,
+            eval_strategy="epoch",
+            save_strategy="epoch",
+            fp16=False,
+            bf16=False,
+            optim="paged_adamw_8bit" if torch.cuda.is_available() else "adamw_torch",
+            report_to="none",
+            max_length=args.max_seq_length,
+            dataset_text_field="text",
+        )
     trainer = SFTTrainer(
         model=model,
         train_dataset=train_ds,
