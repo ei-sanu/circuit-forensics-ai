@@ -266,7 +266,6 @@ def run_actual_training(args, train_samples, val_samples):
         task_type="CAUSAL_LM",
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
     )
-    model = get_peft_model(model, peft_config)
 
     def format_sample(s):
         return (
