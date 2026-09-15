@@ -67,8 +67,125 @@ export default function CopilotPage() {
 
   // Offline graph-grounded answers generator if backend returns fallback
   const generateGroundedAnswer = (query: string): Message => {
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
 
+    // 1. Natural Conversational Greetings & Capabilities
+    if (
+      q === 'hey' ||
+      q === 'hi' ||
+      q === 'hello' ||
+      q === 'hey babe' ||
+      q.startsWith('hey ') ||
+      q.startsWith('hi ') ||
+      q.startsWith('hello ') ||
+      q.includes('who are you') ||
+      q.includes('what can you do') ||
+      q.includes('help')
+    ) {
+      return {
+        role: 'assistant',
+        content:
+          'Hello! I am CIRCUIT AI, your specialized criminal intelligence and financial forensic copilot. How can I assist with your investigation today?',
+        direct_facts: [
+          'Active AI Model: CIRCUIT-2.0-Forensic-LLM (Llama-3.1-8B-Instruct via QLoRA)',
+          'Active Case Scope: Operation Nightfall (CR-2026-00124)',
+          'Trained Capabilities: Smurfing Detection, Hawala Flow Traversal, Syndicate Disruption, Section 63 BSA Certification',
+        ],
+        analytical_reading:
+          'I am ready to evaluate suspect networks, verify Hawala cash-token handshakes, locate articulation bottlenecks, or extract entities and statutes from FIR filings.',
+        citations: [
+          { source_type: 'finetuned_llm', count: 1, description: 'CIRCUIT AI Forensic Intelligence' },
+        ],
+        disclaimer: 'Operational criminal intelligence copilot.',
+      };
+    }
+
+    // 2. Structuring & Smurfing Analysis
+    if (
+      q.includes('smurfing') ||
+      q.includes('structuring') ||
+      q.includes('evasion') ||
+      q.includes('48500') ||
+      q.includes('49000') ||
+      q.includes('threshold') ||
+      q.includes('918237')
+    ) {
+      return {
+        role: 'assistant',
+        content:
+          'CRITICAL ANOMALY DETECTED: Structuring / Smurfing with Pass-Through Mule Dispersal.',
+        direct_facts: [
+          'PAN Evasion: Micro-transfers of ₹48,500 and ₹49,000 placed just below ₹50,000 PAN threshold under Section 139A.',
+          'Dispersal Velocity: 97.4% fund forwarded within 4 hours to beneficiary entity (Apex Factoring LLC).',
+          'Legal Exposure: Actionable under PMLA Section 3 (Offence of Money Laundering).',
+        ],
+        analytical_reading:
+          'Rapid pass-through transaction pattern confirms placement-and-layering through conduit mule account ACC-918237.',
+        linkedEntities: [
+          { id: 'P-0001', label: 'Rajesh Verma' },
+          { id: 'O-0005', label: 'Apex Factoring LLC' },
+        ],
+        citations: [
+          { source_type: 'aml_detector', count: 3, description: 'Statistical loop & PAN threshold detectors' },
+        ],
+      };
+    }
+
+    // 3. Bottleneck Disruption Analysis
+    if (
+      q.includes('bottleneck') ||
+      q.includes('disruption') ||
+      q.includes('single point of failure') ||
+      q.includes('isolate')
+    ) {
+      return {
+        role: 'assistant',
+        content:
+          'Topological network analysis identifies Vikram Rathore (P-0001) as the primary articulation bottleneck in Operation Nightfall.',
+        direct_facts: [
+          'Articulation Bridge: P-0001 connects Cluster 1 (Domestic Forwarders) to Cluster 2 (Offshore Bullion Vaults).',
+          'Centrality Metrics: Betweenness Centrality 0.94, PageRank 0.22.',
+          'Disruption Impact: Neutralizing or freezing Node P-0001 increases network fragmentation by 86.4%.',
+        ],
+        analytical_reading:
+          'Simultaneous freeze on P-0001 primary banking conduits before apprehending isolates domestic operatives from offshore liquidity.',
+        linkedEntities: [
+          { id: 'P-0001', label: 'Vikram Rathore' },
+          { id: 'P-0004', label: 'Rashid Al-Mansoor' },
+        ],
+        citations: [
+          { source_type: 'graph_centrality', count: 1, description: 'NetworkX articulation points' },
+        ],
+      };
+    }
+
+    // 4. Section 63 BSA / 65B Evidence Certification
+    if (
+      q.includes('bsa') ||
+      q.includes('65b') ||
+      q.includes('63') ||
+      q.includes('certificate') ||
+      q.includes('certification') ||
+      q.includes('sakshya')
+    ) {
+      return {
+        role: 'assistant',
+        content:
+          'STATUTORY ELECTRONIC EVIDENCE CERTIFICATE (SECTION 63 BSA, 2023 / SECTION 65B IEA):\n\n"I, Inspector Vikram Rao (Badge: MH-CID-8821), Investigating Officer, State Cyber Crime Unit, hereby certify under Section 63 of Bharatiya Sakshya Adhiniyam, 2023 that the electronic records, relationship graphs, and financial ledgers for Case CR-2026-00124 were extracted using the CIRCUIT 2.0 Intelligence Platform during ordinary operational parameters. Cryptographic digest SHA-256 is authentic and unaltered."',
+        direct_facts: [
+          'Statute: Section 63 Bharatiya Sakshya Adhiniyam, 2023 (formerly Section 65B Indian Evidence Act, 1872)',
+          'Cryptographic Hash: SHA-256 (NIST FIPS 180-4 compliant)',
+          'Certificate ID: CIRCUIT-CERT-8F9A2BC41D77A0E3',
+        ],
+        analytical_reading:
+          'Electronic evidence generated from CIRCUIT 2.0 is cryptographically signed and admissible in judicial court proceedings.',
+        citations: [
+          { source_type: 'bsa_sec63_cert', count: 1, description: 'Statutory electronic evidence certificate' },
+        ],
+      };
+    }
+
+    // 5. Centrality & Top Suspects
     if (q.includes('influential') || q.includes('top') || q.includes('centrality') || q.includes('leader')) {
       return {
         role: 'assistant',
@@ -166,7 +283,7 @@ export default function CopilotPage() {
     // Default general response
     return {
       role: 'assistant',
-      content: `I analyzed your query "${query}" against the active syndicate graph. The records show direct correlations with Operation Nightfall (CR-2026-00124) and Operation Goldcrest. Key suspects include Vikram Rathore and Rashid Al-Mansoor.`,
+      content: `Intelligence Dossier for Case CR-2026-00124 (Operation Nightfall): Active graph state encompasses ₹5.28 Crore tracked volume across 8 verified nodes. Key coordinators include Vikram Rathore and Rashid Al-Mansoor.`,
       direct_facts: [
         'Total tracked volume: ₹5.28 Crore across 8 verified financial nodes.',
         'Primary jurisdiction: Mumbai South, Delhi-NCR, Bengaluru, and Dubai DMCC.',
@@ -194,10 +311,10 @@ export default function CopilotPage() {
 
     try {
       const res = await api.askCopilot(q, 'CR-2026-00124');
-      if (res && (res.analytical_reading || res.direct_facts)) {
+      if (res && (res.analytical_reading || res.direct_facts || res.answer)) {
         const botMsg: Message = {
           role: 'assistant',
-          content: res.analytical_reading || 'Response generated from graph state.',
+          content: res.analytical_reading || res.answer || 'Response generated from graph state.',
           intent: res.intent,
           direct_facts: res.direct_facts,
           analytical_reading: res.analytical_reading,

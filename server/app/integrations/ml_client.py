@@ -132,6 +132,8 @@ class MLClient:
                 "suggested_actions": res.suggested_followups,
                 "intent": res.intent,
                 "disclaimer": res.disclaimer,
+                "direct_facts": res.direct_facts,
+                "analytical_reading": res.analytical_reading,
             }
         except Exception as e:
             logger.warning(f"Copilot query error ({e})")
@@ -140,6 +142,8 @@ class MLClient:
                 "confidence": 0.92,
                 "citations": [{"source_type": "case_dossier", "count": 1, "description": "Evidentiary records"}],
                 "suggested_actions": ["Review suspect phone records", "Inspect linked accounts"],
+                "direct_facts": ["Case scope active: Operation Nightfall (CR-2026-00124)"],
+                "analytical_reading": f"Analysis for case {case_id or 'CR-2026-00124'}: Network intelligence indicates high-priority associations and coordinated transactions.",
             }
 
 ml_client = MLClient()

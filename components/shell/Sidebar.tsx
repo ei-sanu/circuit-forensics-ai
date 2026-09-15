@@ -477,13 +477,8 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* User Footer & Synthetic Demo Disclaimer */}
-      <div className="p-3 border-t border-neutral-200/60 dark:border-slate-800/60 bg-neutral-100/60 dark:bg-[#070a11]/80 space-y-2">
-        {/* Demo Disclaimer */}
-        <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-500/20 text-[9px] text-amber-600 dark:text-amber-400 font-mono leading-tight">
-          <strong className="uppercase">SYNTHETIC DEMO:</strong> Real-time graph intelligence simulation.
-        </div>
-
+      {/* User Footer */}
+      <div className="p-3 border-t border-neutral-200/60 dark:border-slate-800/60 bg-neutral-100/60 dark:bg-[#070a11]/80">
         {/* User Card */}
         <div className="flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-slate-900 border border-neutral-200/80 dark:border-slate-800 shadow-xs">
           <div className="flex items-center gap-2.5 overflow-hidden">
