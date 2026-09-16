@@ -19,7 +19,10 @@
     "ml": "node scripts/run-ml.js",
     "ml:install": "node scripts/install-ml.js",
     "setup": "node scripts/install-all.js",
-    "install:all": "node scripts/install-all.js"
+    "install:all": "node scripts/install-all.js",
+    "model:setup": "bash scripts/setup_local_model.sh",
+    "model:status": "curl -s http://localhost:3000/api/copilot/model-status",
+    "train:local": "python3 scripts/train_local.py"
   },
   "dependencies": {
     "@types/leaflet": "^1.9.22",

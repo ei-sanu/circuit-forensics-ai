@@ -17,6 +17,8 @@ import {
   FileText,
   Check,
   Volume2,
+  Database,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
@@ -42,6 +44,14 @@ export default function CopilotPage() {
   const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [modelInfo, setModelInfo] = useState<{ model_name?: string; training_samples_count?: number; active_engine?: string } | null>(null);
+  const [ragInfo, setRagInfo] = useState<{
+    total_vectors?: number;
+    total_chunks?: number;
+    embed_model?: string;
+    faiss_available?: boolean;
+    initialized?: boolean;
+  } | null>(null);
+  const [isReindexing, setIsReindexing] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,7 +73,26 @@ export default function CopilotPage() {
           active_engine: 'in_process_rag',
         });
       });
+
+    api.getRAGStatus()
+      .then((res) => {
+        if (res) setRagInfo(res);
+      })
+      .catch(() => {});
   }, []);
+
+  const handleReindex = async () => {
+    setIsReindexing(true);
+    try {
+      await api.rebuildRAGIndex();
+      const updated = await api.getRAGStatus();
+      if (updated) setRagInfo(updated);
+    } catch (e) {
+      console.error('Failed to rebuild RAG index:', e);
+    } finally {
+      setIsReindexing(false);
+    }
+  };
 
   // Offline graph-grounded answers generator if backend returns fallback
   const generateGroundedAnswer = (query: string): Message => {
@@ -378,26 +407,43 @@ export default function CopilotPage() {
             </div>
           </div>
 
-          <div className="space-y-1.5 max-w-md">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-[10px] font-mono font-medium text-neutral-600 dark:text-neutral-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{modelInfo?.model_name || 'CIRCUIT-2.0-Forensic-LLM (Llama-3.1-8B-Instruct)'}</span>
+          <div className="space-y-2 max-w-md">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-[10px] font-mono font-medium text-neutral-600 dark:text-neutral-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{modelInfo?.model_name || 'CIRCUIT-2.0-Forensic-LLM (Llama-3.1-8B-Instruct)'}</span>
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-[10px] font-mono font-medium text-blue-700 dark:text-blue-300">
+                <Database className="w-3 h-3 text-blue-500" />
+                <span>RAG: {ragInfo?.total_vectors ?? 0} vectors</span>
+                <button
+                  type="button"
+                  onClick={handleReindex}
+                  disabled={isReindexing}
+                  title="Rebuild FAISS Vector Index"
+                  className="hover:text-blue-900 dark:hover:text-white transition disabled:opacity-50 ml-1"
+                >
+                  <RefreshCw className={`w-2.5 h-2.5 ${isReindexing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
             </div>
+
             <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
               CIRCUIT AI Copilot
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              Fine-tuned criminal intelligence and financial forensic engine. Ask questions about suspect networks, Hawala transaction loops, vehicle convoys, or case evidence.
+              Fine-tuned criminal intelligence and FAISS-powered document RAG engine. Ask questions about suspect networks, Hawala transaction loops, vehicle convoys, or case evidence.
             </p>
           </div>
 
           {/* Quick Forensic Query Chips */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg w-full pt-2">
             {[
+              { label: 'Document RAG Evidence Search', query: 'What evidence exists against Rajesh Verma in seized bank ledgers and company registries?' },
               { label: 'Structuring / PAN Smurfing', query: 'Analyze the financial transaction chain for account ACC-918237 and check for PAN threshold evasion.' },
               { label: 'Syndicate Bottleneck Disruption', query: 'Identify the primary bottleneck node in Operation Nightfall and suggest a disruption strategy.' },
               { label: 'Circular Hawala Loops', query: 'Explain the circular Hawala loop between Shell Import Corp, Karan Malhotra, and Dubai Bullion Token.' },
-              { label: 'Section 63 BSA Certification', query: 'Generate a Section 63 BSA electronic evidence certificate for Case CR-2026-00124.' },
             ].map((chip, idx) => (
               <button
                 key={idx}
@@ -492,14 +538,22 @@ export default function CopilotPage() {
                 {/* Citations */}
                 {m.citations && m.citations.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-1">
-                    {m.citations.map((c, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400"
-                      >
-                        Source: {c.source_type} ({c.count} records)
-                      </span>
-                    ))}
+                    {m.citations.map((c, i) => {
+                      const isDocRAG = c.source_type === 'document_rag';
+                      return (
+                        <span
+                          key={i}
+                          className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1.5 ${
+                            isDocRAG
+                              ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-semibold'
+                              : 'bg-neutral-50 dark:bg-slate-800 border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400'
+                          }`}
+                        >
+                          {isDocRAG && <FileText className="w-2.5 h-2.5 text-blue-500" />}
+                          <span>{c.description || `Source: ${c.source_type} (${c.count} records)`}</span>
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
 

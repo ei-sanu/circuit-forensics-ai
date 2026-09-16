@@ -24,7 +24,7 @@ CHECKPOINT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(o
 class FineTunedLLMClient:
     """Client for querying fine-tuned CIRCUIT LLM checkpoints via Ollama, vLLM, or in-process RAG."""
 
-    def __init__(self, timeout_seconds: float = 4.0):
+    def __init__(self, timeout_seconds: float = 12.0):
         self.timeout = timeout_seconds
 
     async def get_status(self) -> Dict[str, Any]:
@@ -112,7 +112,30 @@ class FineTunedLLMClient:
             f"<|start_header_id|>assistant<|end_header_id|>\n"
         )
 
-        # 1. Try Ollama Native Endpoint
+        # 1. Try Ollama Native Chat Endpoint (/api/chat)
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                chat_payload = {
+                    "model": FINETUNED_MODEL_NAME,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"{query}\n\nEvidence Context:\n{graph_context}" if graph_context else query}
+                    ],
+                    "stream": False,
+                    "options": {"temperature": 0.2, "top_p": 0.9}
+                }
+                res = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=chat_payload)
+                if res.status_code == 200:
+                    data = res.json()
+                    response_text = data.get("message", {}).get("content", "").strip()
+                    # If response is a refusal, fall back to deterministic forensic engine
+                    refusals = ["i can't provide", "i cannot provide", "i am unable to provide", "i cannot assist"]
+                    if response_text and not any(r in response_text.lower() for r in refusals):
+                        return response_text
+        except Exception as e:
+            logger.debug(f"Ollama chat generation skipped ({e})")
+
+        # 1b. Fallback to Ollama /api/generate
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 payload = {
@@ -125,10 +148,11 @@ class FineTunedLLMClient:
                 if res.status_code == 200:
                     data = res.json()
                     response_text = data.get("response", "").strip()
-                    if response_text:
+                    refusals = ["i can't provide", "i cannot provide", "i am unable to provide", "i cannot assist"]
+                    if response_text and not any(r in response_text.lower() for r in refusals):
                         return response_text
         except Exception as e:
-            logger.debug(f"Ollama generation skipped ({e})")
+            logger.debug(f"Ollama legacy generation skipped ({e})")
 
         # 2. Try vLLM / OpenAI Compatible Endpoint
         try:

@@ -1,4 +1,4 @@
-"""Copilot Engine for structured graph reasoning and local AI intelligence."""
+"""Copilot Engine for structured graph reasoning, document RAG, and local AI intelligence."""
 import re
 from typing import List, Optional
 import httpx
@@ -296,25 +296,68 @@ class CopilotEngine:
 
         facts = [
             f"Active Network Topology: {metrics.node_count} nodes, {metrics.edge_count} verified connections.",
-            f"Highest-scoring central coordinator in active scope: {top_node}."
+            f"Highest-scoring central coordinator in active scope: {top_node}.",
         ]
 
-        rag_context = self._build_graph_rag_context()
-        llm_response = await finetuned_llm_client.generate_response(query=req.query, graph_context=rag_context)
+        # 1. Graph topology context (existing)
+        graph_rag_context = self._build_graph_rag_context()
+
+        # 2. Document-level RAG retrieval (new)
+        doc_context = ""
+        rag_citations: List[Citation] = []
+        try:
+            from app.services.rag_service import rag_service
+            doc_context, doc_citations = await rag_service.retrieve(
+                query=req.query,
+                case_id=req.case_id if hasattr(req, "case_id") else None,
+                top_k=5,
+            )
+            if doc_citations:
+                rag_citations = [
+                    Citation(
+                        source_type="document_rag",
+                        count=1,
+                        description=f"{c['source']} (doc: {c['document_id']}, relevance: {c['relevance']})"
+                    )
+                    for c in doc_citations[:3]
+                ]
+        except Exception as e:
+            pass  # RAG is best-effort; degrade gracefully
+
+        # 3. Combine contexts
+        combined_context = graph_rag_context
+        if doc_context:
+            combined_context = f"{graph_rag_context}\n\n{doc_context}"
+
+        # 4. Query fine-tuned LLM with enriched context
+        llm_response = await finetuned_llm_client.generate_response(
+            query=req.query,
+            graph_context=combined_context,
+        )
 
         analytical = llm_response if llm_response else (
             f"Forensic intelligence analysis for Case CR-2026-00124: Network graph shows multi-layered transactions "
             f"and cross-border communication corridors. Lead entity {top_node} coordinates key logistical handshakes."
         )
 
+        # 5. Merge citations: graph + document RAG
+        all_citations = [
+            Citation(
+                source_type="finetuned_llm" if llm_response else "graph_context",
+                count=metrics.node_count or 1,
+                description="Fine-tuned forensic reasoning & graph topology"
+            )
+        ] + rag_citations
+
         return CopilotQueryResponse(
             intent="general_inquiry",
             direct_facts=facts,
             analytical_reading=analytical,
-            citations=[Citation(source_type="finetuned_llm" if llm_response else "graph_context", count=metrics.node_count or 1, description="Fine-tuned forensic reasoning & graph context")],
+            citations=all_citations,
             suggested_followups=[
                 "Who is the most influential suspect?",
                 "Show all alerts for this case",
-                "How are P-0001 and O-0001 connected?"
+                "How are P-0001 and O-0001 connected?",
             ]
         )
+

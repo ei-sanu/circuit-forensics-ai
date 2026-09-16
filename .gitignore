@@ -52,7 +52,10 @@ Thumbs.db
 *.bin
 *.safetensors
 *.pt
-*.pth
 *.onnx
 *.gguf
+*.faiss
+*.pkl
+rag_cache/
+**/rag_cache/
 

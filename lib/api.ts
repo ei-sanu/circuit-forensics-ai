@@ -253,13 +253,24 @@ export const api = {
       method: 'POST',
     }),
 
-  // Copilot
+  // Copilot & RAG
   askCopilot: (query: string, caseId?: string) =>
     request<any>('/copilot/ask', {
       method: 'POST',
       body: JSON.stringify({ query, caseId }),
     }),
   getCopilotModelStatus: () => request<any>('/copilot/model-status'),
+  getRAGStatus: () => request<any>('/copilot/rag/status'),
+  triggerRAGIndex: (caseId?: string) =>
+    request<any>('/copilot/rag/index', {
+      method: 'POST',
+      body: JSON.stringify({ case_id: caseId }),
+    }),
+  rebuildRAGIndex: (caseId?: string) =>
+    request<any>('/copilot/rag/rebuild', {
+      method: 'POST',
+      body: JSON.stringify({ case_id: caseId }),
+    }),
 
   // Audit Logs
   getAuditLogs: (params?: { limit?: number; skip?: number; userId?: string; action?: string }) => {

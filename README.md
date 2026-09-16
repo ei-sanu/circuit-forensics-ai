@@ -103,6 +103,13 @@ Modernized from legacy IPC codes to official **Bharatiya Nyaya Sanhita (DNS)** s
 * **Centralized Provisioning**: Public self-registration is disabled. All accounts and biometric credentials are authenticated and issued by the HR Directorate or System Administrator.
 * **Immutable Compliance Audit Trail**: Cryptographic logging of every query, mutation, export, and authentication attempt.
 
+### 7. 🧠 100% Local Sovereign AI Copilot & Service-Level RAG
+* **Zero Cloud Dependency & Complete Data Sovereignty**: Sensitive criminal records, FIRs, and bank ledgers remain strictly on-premise on your local machine or intranet. Eliminates reliance on external paid APIs or unreliable cloud notebooks (Google Colab).
+* **Local Meta Llama Copilot (`circuit-copilot`)**: Hosted locally via Ollama with specialized forensic system instructions for Bharatiya Nyaya Sanhita (BNS 2023), PMLA Section 3, and Bharatiya Sakshya Adhiniyam (BSA Section 63). Runs with Apple Metal GPU acceleration on Mac and CUDA on Linux/Windows.
+* **Service-Level FAISS Vector RAG Engine**: High-performance semantic retrieval using `all-MiniLM-L6-v2` embeddings and FAISS index. Automatically parses and embeds all case documents and FIRs into vector space.
+* **Real-time Dual Context Assembly**: Synthesizes live topological metrics (PageRank, betweenness bottlenecks) and retrieved document quotes into unified, evidence-grounded forensic intelligence with clickable court citations.
+* **Local Fine-Tuning Engine**: Includes a standalone script (`scripts/train_local.py`) to run LoRA fine-tuning directly on Apple Silicon MPS, NVIDIA CUDA, or multi-core CPU using `data/train.jsonl`.
+
 ---
 
 ## 🔌 Microservice Components & Ports
@@ -178,6 +185,29 @@ npm run ml
 
 # Terminal 3: Next.js Frontend (Port 8080)
 npm run dev
+```
+
+### Step 4: Configure Local AI Model & Service-Level RAG
+CIRCUIT 2.0 does not require external paid APIs or unstable cloud GPU notebooks (Google Colab). It runs 100% locally with high performance:
+
+```bash
+# 1-Click: Pulls base model and registers the 'circuit-copilot' forensic intelligence model in Ollama
+npm run model:setup
+```
+
+Inspect local model connectivity and RAG status:
+```bash
+# Verify active LLM engine (outputs Ollama circuit-copilot connection details)
+npm run model:status
+
+# Verify local FAISS document vector store status
+curl -s http://localhost:3000/api/copilot/rag/status -H "Authorization: Bearer <token>"
+```
+
+*(Optional) Run standalone LoRA fine-tuning on your local hardware:*
+```bash
+# Trains directly on Apple Silicon Metal (MPS), NVIDIA CUDA, or multi-core CPU
+npm run train:local
 ```
 
 ---
