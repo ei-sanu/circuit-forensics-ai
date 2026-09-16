@@ -7,6 +7,11 @@ class VerifyFaceDto(BaseModel):
     livenessData: Optional[Dict[str, Any]] = None
     threshold: Optional[float] = None
 
+class VerifyTouchIdDto(BaseModel):
+    challengeId: str = Field(..., description="Unique 2FA verification challenge ID")
+    credential: Dict[str, Any] = Field(..., description="WebAuthn platform credential returned by Mac Touch ID")
+    deviceInfo: Optional[Dict[str, Any]] = None
+
 class EnrollFaceDto(BaseModel):
     userId: Optional[str] = None
     faceImage: str = Field(..., description="Base64 data URL JPEG frame for enrollment")

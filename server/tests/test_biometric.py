@@ -97,3 +97,11 @@ def test_close_distance_face_verification():
     assert res.verified is True
     assert res.similarity_score >= 0.85
     assert res.confidence >= 85.0
+
+def test_verify_touch_id_endpoint(client):
+    """Verify Touch ID endpoint rejects nonexistent challenge and responds to WebAuthn payload."""
+    response = client.post(
+        "/api/biometric/touch-id/verify",
+        json={"challengeId": "chn_nonexistent_touch_id", "credential": {"id": "test_cred"}}
+    )
+    assert response.status_code == 401

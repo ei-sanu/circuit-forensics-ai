@@ -138,6 +138,15 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  verifyTouchIdBiometric: (data: {
+    challengeId: string;
+    credential: any;
+    deviceInfo?: any;
+  }) =>
+    request<any>('/biometric/touch-id/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   enrollFaceBiometric: (data: {
     userId?: string;
     faceImage: string;

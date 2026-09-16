@@ -2,7 +2,7 @@ from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, Request
 from app.core.permissions import get_current_user, get_optional_user
 from app.services.biometric_service import biometric_service
-from app.schemas.biometric import VerifyFaceDto, EnrollFaceDto
+from app.schemas.biometric import VerifyFaceDto, VerifyTouchIdDto, EnrollFaceDto
 
 router = APIRouter(prefix="/biometric", tags=["Biometric Identity & Facial Verification"])
 
@@ -11,6 +11,12 @@ async def verify_face(dto: VerifyFaceDto, request: Request):
     ip = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
     return await biometric_service.verify_face(dto, ip=ip, user_agent=user_agent)
+
+@router.post("/touch-id/verify", summary="Mac Touch ID / WebAuthn biometric verification")
+async def verify_touch_id(dto: VerifyTouchIdDto, request: Request):
+    ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+    return await biometric_service.verify_touch_id(dto, ip=ip, user_agent=user_agent)
 
 @router.post("/enroll", summary="Enroll a user facial biometric identity template")
 async def enroll_face(
