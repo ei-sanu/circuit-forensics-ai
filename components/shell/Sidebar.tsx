@@ -262,6 +262,15 @@ export function Sidebar() {
           ],
         },
         {
+          id: 'ai',
+          label: 'AI & Forensic Copilot',
+          icon: BrainCircuit,
+          items: [
+            { label: 'AI Copilot', href: '/copilot', icon: Bot },
+            { label: 'Intelligence Lab', href: '/intelligence-lab', icon: Sparkles },
+          ],
+        },
+        {
           id: 'surveillance',
           label: 'Field Surveillance',
           icon: Radar,
@@ -283,6 +292,7 @@ export function Sidebar() {
         },
       ];
     }
+
 
     // Default: Admin (Full Complete System Authority)
     const categories: NavCategory[] = [

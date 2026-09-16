@@ -73,11 +73,12 @@ function findShortestPathClient(edges: any[], startId: string, endId: string): s
 }
 
 export default function ExplorerPage() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [graphData, setGraphData] = useState<{ nodes: any[]; edges: any[] }>({
     nodes: MASTER_ENTIRE_NETWORK.nodes,
     edges: MASTER_ENTIRE_NETWORK.edges,
   });
+
   const [analytics, setAnalytics] = useState<any>(MASTER_ENTIRE_NETWORK.analytics);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [selectedEdge, setSelectedEdge] = useState<any>(null);
@@ -288,7 +289,7 @@ export default function ExplorerPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-6.5rem)] flex flex-col gap-3 text-charcoal-900">
+    <div className="h-[calc(100vh-9.5rem)] min-h-[580px] flex flex-col gap-3 text-neutral-900 dark:text-neutral-100">
       {/* Top Search & Controller Bar */}
       <div className="p-3 sm:p-4 rounded-3xl glass-panel flex flex-col lg:flex-row items-center justify-between gap-3 text-xs shadow-md">
         {/* Search Bar */}

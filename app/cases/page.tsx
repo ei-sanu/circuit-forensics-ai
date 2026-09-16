@@ -34,13 +34,15 @@ import { downloadElementAsPdf } from '@/lib/pdfExport';
 
 export default function CasesPage() {
   const [cases, setCases] = useState<CaseRecord[]>(MASTER_CASES);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'under_review' | 'pending' | 'closed'>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'low'>('all');
   const [regionFilter, setRegionFilter] = useState('all');
+  const [recommendedOnly, setRecommendedOnly] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 12;
+
 
   // Modal states
   const [selectedCase, setSelectedCase] = useState<CaseRecord | null>(null);
@@ -155,6 +157,14 @@ export default function CasesPage() {
 
   const filteredCases = useMemo(() => {
     return cases.filter((c) => {
+      if (recommendedOnly) {
+        const isPriorityCase =
+          c.caseNumber === 'CR-2026-00124' ||
+          c.caseNumber === 'CR-2026-00188' ||
+          c.caseNumber === 'CR-2026-00204' ||
+          c.priority === 'critical';
+        if (!isPriorityCase) return false;
+      }
       if (statusFilter !== 'all' && c.status !== statusFilter) return false;
       if (priorityFilter !== 'all' && c.priority !== priorityFilter) return false;
       if (regionFilter !== 'all' && !c.region?.toLowerCase().includes(regionFilter.toLowerCase())) return false;
@@ -170,7 +180,8 @@ export default function CasesPage() {
       }
       return true;
     });
-  }, [cases, statusFilter, priorityFilter, regionFilter, searchQuery]);
+  }, [cases, recommendedOnly, statusFilter, priorityFilter, regionFilter, searchQuery]);
+
 
   const totalPages = Math.ceil(filteredCases.length / pageSize) || 1;
   const paginatedCases = useMemo(() => {
@@ -258,8 +269,23 @@ export default function CasesPage() {
               <option value="Southern">Southern Zone (Bengaluru / Hosur)</option>
               <option value="Eastern">Eastern Zone (Kolkata / Bihar)</option>
             </select>
+
+            {/* Investigator Recommended Priority Toggle */}
+            <button
+              type="button"
+              onClick={() => setRecommendedOnly((prev) => !prev)}
+              className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer ${
+                recommendedOnly
+                  ? 'bg-red-600 text-white border border-red-500 shadow-red-500/20 active:scale-95'
+                  : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-400/40 hover:bg-amber-500/20'
+              }`}
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>{recommendedOnly ? 'Priority Queue Active (3)' : 'Recommended Priority'}</span>
+            </button>
           </div>
         </div>
+
 
         {/* Status Filter Pills */}
         <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-beige-200 text-xs">

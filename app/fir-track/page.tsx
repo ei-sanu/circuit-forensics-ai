@@ -36,8 +36,9 @@ const DEFAULT_FIRS: FirRecord[] = MASTER_FIRS;
 
 export default function FirTrackPage() {
   const [firs, setFirs] = useState<FirRecord[]>(DEFAULT_FIRS);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedFir, setSelectedFir] = useState<FirRecord | null>(DEFAULT_FIRS[0] || null);
   const [showCopyModal, setShowCopyModal] = useState<FirRecord | null>(null);
