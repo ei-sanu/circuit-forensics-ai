@@ -272,6 +272,11 @@ class CopilotQueryRequest(BaseModel):
     graph: Optional[GraphState] = None
     document_summaries: List[str] = Field(default_factory=list)
     use_local_llm: bool = False
+    api_key: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    history: Optional[List[Dict[str, Any]]] = None
+
 
 
 class CopilotQueryResponse(BaseModel):

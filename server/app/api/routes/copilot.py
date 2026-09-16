@@ -21,11 +21,28 @@ async def ask_copilot_endpoint(
     dto: CopilotQueryDto,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    return await copilot_service.ask_copilot(query=dto.query, case_id=dto.caseId, user=user)
+    return await copilot_service.ask_copilot(
+        query=dto.query,
+        case_id=dto.caseId,
+        user=user,
+        api_key=dto.apiKey,
+        provider=dto.provider,
+        model=dto.model,
+        history=dto.history,
+    )
 
 @router.post("/query", summary="Query AI Copilot natural-language investigative questions")
 async def query_copilot_endpoint(
     dto: CopilotQueryDto,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    return await copilot_service.ask_copilot(query=dto.query, case_id=dto.caseId, user=user)
+    return await copilot_service.ask_copilot(
+        query=dto.query,
+        case_id=dto.caseId,
+        user=user,
+        api_key=dto.apiKey,
+        provider=dto.provider,
+        model=dto.model,
+        history=dto.history,
+    )
+
