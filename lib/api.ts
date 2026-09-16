@@ -270,7 +270,7 @@ export const api = {
   askCopilot: (
     query: string,
     caseId?: string,
-    options?: { apiKey?: string; provider?: string; model?: string; history?: any[] }
+    options?: { apiKey?: string; provider?: string; model?: string; history?: any[]; document_text?: string }
   ) =>
     request<any>('/copilot/ask', {
       method: 'POST',
@@ -281,6 +281,7 @@ export const api = {
         provider: options?.provider,
         model: options?.model,
         history: options?.history,
+        document_text: options?.document_text,
       }),
     }),
   getCopilotModelStatus: () => request<any>('/copilot/model-status'),
@@ -295,6 +296,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ case_id: caseId }),
     }),
+  uploadCopilotDocument: async (file: File, caseId?: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (caseId) formData.append('caseId', caseId);
+    const res = await fetch('/api/copilot/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    return await res.json();
+  },
 
 
   // Audit Logs

@@ -113,7 +113,7 @@ Modernized from legacy IPC codes to official **Bharatiya Nyaya Sanhita (DNS)** s
 * **Transparent Explainability ("How did CIRCUIT reach this conclusion?")**: Dedicated chain-of-custody accordion exposing the Data Examined, Analysis Conducted, Evidence Reviewed, Key Finding, and Explicit Limitations.
 * **Explicit Uncertainty & Evidentiary Boundaries**: Every major briefing defines "What remains unverified" to ensure analysts and courts understand the boundaries of algorithmic observations under Bharatiya Sakshya Adhiniyam (BSA 2023).
 * **Service-Level FAISS Vector Store**: In-memory and disk-persisted (`rag_cache/global.faiss`) semantic retrieval using `all-MiniLM-L6-v2` embeddings over canonical case records and FIRs.
-* **Local Meta Llama Model (`circuit-copilot`)**: Hosted locally via Ollama with specialized forensic instructions for BNS 2023, BNSS 2023, and BSA 2023 Section 63 digital evidence admissibility.
+* **Sovereign Neural Intelligence Core (`circuit-sovereign-v2`)**: In-process neural intelligence engine with specialized forensic instructions for BNS 2023, BNSS 2023, and BSA 2023 Section 63 digital evidence admissibility. Operates 100% locally and offline without external daemons.
 * **Local Fine-Tuning Engine**: Standalone LoRA training pipeline (`scripts/train_local.py`) compatible with Apple Silicon Metal (MPS), NVIDIA CUDA, or CPU using domain-specific dataset `data/train.jsonl`.
 
 ---
@@ -196,14 +196,7 @@ npm run dev
 ### Step 4: Configure Local AI Model & Service-Level RAG
 CIRCUIT 2.0 does not require external paid APIs or unstable cloud GPU notebooks (Google Colab). It runs 100% locally with high performance:
 
-```bash
-# 1-Click: Pulls base model and registers the 'circuit-copilot' forensic intelligence model in Ollama
-npm run model:setup
-```
-
-Inspect local model connectivity and RAG status:
-```bash
-# Verify active LLM engine (outputs Ollama circuit-copilot connection details)
+# Inspect active sovereign neural model status
 npm run model:status
 
 # Verify local FAISS document vector store status
