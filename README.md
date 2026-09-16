@@ -359,6 +359,135 @@ CIRCUIT/
 
 ---
 
+## 🔐 Biometric Authentication — Touch ID & Face ID
+
+CIRCUIT enforces a **second factor biometric check** immediately after a valid email/password login. The biometric layer is handled entirely by the `BiometricVerification` orchestrator component with two available modalities.
+
+---
+
+### Default Mode: Mac Touch ID (Apple Secure Enclave)
+
+On **macOS**, Touch ID is selected **automatically** and presents immediately after credential entry — no camera is opened and no browser permissions are requested.
+
+```
+Login Screen → [Email + Password] → ✅ Credentials Valid
+                                          │
+                                          ▼
+                            ┌─────────────────────────┐
+                            │  Touch ID Prompt (Mac)  │  ← Default on Mac
+                            │  Apple Secure Enclave   │
+                            │  WebAuthn Platform Auth │
+                            └────────────┬────────────┘
+                                         │ Success
+                                         ▼
+                              JWT Issued → Dashboard
+```
+
+**How it works:**
+1. The backend issues a cryptographic `challengeId` (32-byte random hex) via `POST /api/auth/login`.
+2. `TouchIdVerification` calls `navigator.credentials.get()` (WebAuthn assertion) — or `navigator.credentials.create()` (registration) on first use — with `authenticatorAttachment: 'platform'`, which triggers the native macOS Touch ID dialog.
+3. The resulting WebAuthn `clientDataJSON` (base64-encoded) and `id` are sent to `POST /api/biometric/touch-id/verify`.
+4. The backend decodes the `clientDataJSON`, verifies the embedded `challenge` matches the stored `challengeId`, updates the credential to `MAC_TOUCH_ID`, and issues a signed JWT with `authMethod: "TOUCH_ID"`.
+
+**Key properties:**
+- ✅ No camera opened, no browser permission dialog shown
+- ✅ Private key never leaves Apple Secure Enclave
+- ✅ One-tap authentication via fingerprint sensor
+- ✅ Falls back to registration flow on first use (no pre-enrollment required)
+
+---
+
+### Alternative Mode: Face ID (Live Camera Scan)
+
+Face ID camera scanning is **only activated by explicit user action** — clicking the **"Face ID (Camera)"** toggle button. The camera will **never open automatically**.
+
+```
+Touch ID Screen
+      │
+      │  [User clicks "Face ID (Camera)"]   ← Only explicit user intent opens camera
+      ▼
+┌──────────────────────────────────┐
+│   Live Optical Face Scan         │
+│   - BestFrameBuffer (8 frames)   │
+│   - BiometricStabilityTracker    │
+│   - ~500ms hold-still window     │
+│   - YCbCr + RGB skin segmentation│
+└──────────────────┬───────────────┘
+                   │ Auto-capture
+                   ▼
+         POST /api/biometric/verify
+                   │
+                   ▼
+         JWT Issued → Camera Closed → Redirect
+```
+
+**Camera lifecycle rules (strictly enforced):**
+| Event | Camera State |
+|---|---|
+| Page load (Mac) | ❌ Never opened |
+| Page load (non-Mac) | ❌ Never opened until user clicks |
+| User clicks "Face ID (Camera)" | ✅ Opens |
+| Verification success | 🔴 Stopped immediately (twice: before timeout + inside timeout before redirect) |
+| User clicks "Cancel & Return" | 🔴 Stopped immediately |
+| User switches back to Touch ID | 🔴 Stopped immediately |
+| Component unmounts | 🔴 Stopped by cleanup effect |
+
+**Camera cleanup on success (strict):**
+```
+executeBiometricVerification()
+  → API returns 200
+  → setScannerState('VERIFIED')
+  → stopCamera()          ← First stop: kills stream, clears interval, clears timeout
+  → setTimeout(1000ms, () => {
+      stopCamera()        ← Second stop: belt-and-suspenders before page transition
+      onSuccess(res)      ← Redirect fires only AFTER camera confirmed stopped
+    })
+```
+
+---
+
+### Method Selection UI
+
+The auth modal always shows a **method toggle bar** at the top:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [🖐 Touch ID  Mac Default]       [ 📷 Face ID (Camera) ]  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- **Mac users**: Touch ID tab is pre-selected and highlighted
+- **Non-Mac users**: Face ID tab is pre-selected (Touch ID fallback available if WebAuthn platform authenticator is detected)
+- Switching to Face ID explicitly sets an internal `hasUserRequestedCameraRef` flag before the camera is allowed to open
+
+---
+
+### Backend Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/login` | None | Returns `challengeId` if biometric required |
+| `POST` | `/api/biometric/touch-id/verify` | Challenge | Validates WebAuthn assertion, issues JWT |
+| `POST` | `/api/biometric/verify` | Challenge | Validates live face embedding 1:1, issues JWT |
+| `POST` | `/api/biometric/enroll` | JWT | Enroll face template for a user |
+| `GET` | `/api/biometric/challenge` | None | Generate standalone auth challenge |
+
+---
+
+### Source Files
+
+| File | Purpose |
+|---|---|
+| [`lib/touchId.ts`](lib/touchId.ts) | WebAuthn Touch ID utility: Mac detection, platform authenticator check, credential creation/assertion, serialization helpers |
+| [`lib/biometric.ts`](lib/biometric.ts) | Client-side face analysis: quality scoring, stability tracking, directional cues, frame buffering, close-distance support |
+| [`components/auth/BiometricVerification.tsx`](components/auth/BiometricVerification.tsx) | Orchestrator: method state machine, camera lifecycle management, camera intent gate (`hasUserRequestedCameraRef`), dual-mode render |
+| [`components/auth/TouchIdVerification.tsx`](components/auth/TouchIdVerification.tsx) | Touch ID HUD: fingerprint reticle, auto-trigger on mount, state machine (`IDLE→PROMPTING→VERIFYING→VERIFIED→FAILED`) |
+| [`server/app/services/biometric_service.py`](server/app/services/biometric_service.py) | Backend: `verify_touch_id()`, `verify_face()`, seed template auto-enrollment, AES-256-GCM embedding encryption |
+| [`server/app/ml/face_engine.py`](server/app/ml/face_engine.py) | ML: `crop_to_face()` (YCbCr skin segmentation), `extract_embedding()` (128D L2-norm), quality thresholds |
+| [`server/app/api/routes/biometric.py`](server/app/api/routes/biometric.py) | FastAPI routes: `/verify`, `/touch-id/verify`, `/enroll`, `/challenge` |
+
+---
+
 ## 🔒 Security & Compliance Specification
 
 * **Zero Plaintext Credentials**: All sensitive tokens and biometric templates are encrypted at rest using AES-256-GCM.

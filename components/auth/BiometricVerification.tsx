@@ -59,6 +59,8 @@ export function BiometricVerification({
   const isVerifyingRef = useRef<boolean>(false);
   const isTransitioningRef = useRef<boolean>(false);
   const consecutiveValidCyclesRef = useRef<number>(0);
+  // Camera must ONLY open after an explicit user action (clicking "Switch to Face ID")
+  const hasUserRequestedCameraRef = useRef<boolean>(false);
 
   // Biometric Method Selection (Defaults to Touch ID on Mac devices)
   const [biometricMethod, setBiometricMethod] = useState<'TOUCH_ID' | 'FACE_ID'>('FACE_ID');
@@ -172,7 +174,9 @@ export function BiometricVerification({
       stopCamera();
 
       // Smooth visual confirmation before redirect
+      // Belt-and-suspenders: stop camera again right before redirect to guarantee hardware release
       timeoutRef.current = setTimeout(() => {
+        stopCamera(); // strict final cleanup before page transition
         onSuccess(res);
       }, 1000);
     } catch (err: any) {
@@ -326,7 +330,7 @@ export function BiometricVerification({
   };
 
   useEffect(() => {
-    if (biometricMethod === 'FACE_ID') {
+    if (biometricMethod === 'FACE_ID' && hasUserRequestedCameraRef.current) {
       initCamera();
     } else {
       stopCamera();
@@ -352,7 +356,10 @@ export function BiometricVerification({
           </button>
           <button
             type="button"
-            onClick={() => setBiometricMethod('FACE_ID')}
+            onClick={() => {
+              hasUserRequestedCameraRef.current = true;
+              setBiometricMethod('FACE_ID');
+            }}
             className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition text-neutral-400 hover:text-white cursor-pointer"
           >
             <Camera className="w-3.5 h-3.5 text-neutral-400" />
@@ -365,7 +372,10 @@ export function BiometricVerification({
           claimedUser={claimedUser}
           onSuccess={onSuccess}
           onCancel={onCancel}
-          onSwitchToFaceId={() => setBiometricMethod('FACE_ID')}
+          onSwitchToFaceId={() => {
+              hasUserRequestedCameraRef.current = true;
+              setBiometricMethod('FACE_ID');
+            }}
         />
       </div>
     );
@@ -389,7 +399,10 @@ export function BiometricVerification({
         </button>
         <button
           type="button"
-          onClick={() => setBiometricMethod('FACE_ID')}
+          onClick={() => {
+            hasUserRequestedCameraRef.current = true;
+            setBiometricMethod('FACE_ID');
+          }}
           className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-extrabold transition bg-neutral-800 text-cyan-400 border border-cyan-500/40 shadow-sm cursor-pointer"
         >
           <Camera className="w-3.5 h-3.5 text-cyan-400" />
