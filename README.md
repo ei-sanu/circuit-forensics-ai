@@ -496,6 +496,29 @@ The auth modal always shows a **method toggle bar** at the top:
 
 ---
 
+## 👥 Contributors
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/ei-sanu">
+        <img src="https://github.com/ei-sanu.png" width="100px;" alt="ei-sanu"/><br />
+        <sub><b>ei-sanu</b></sub>
+      </a><br />
+      <sub>💻 Core Developer & Architect</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/mayanksharma-lpu">
+        <img src="https://github.com/mayanksharma-lpu.png" width="100px;" alt="mayanksharma-lpu"/><br />
+        <sub><b>mayanksharma-lpu</b></sub>
+      </a><br />
+      <sub>🎨 UI & Legal Engine</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 📄 License & Attribution
 
 Developed for Enterprise Law Enforcement & Intelligence Agencies. All rights reserved.
