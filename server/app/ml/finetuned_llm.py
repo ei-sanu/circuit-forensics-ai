@@ -94,15 +94,98 @@ class FineTunedLLMClient:
         self,
         query: str,
         graph_context: str = "",
-        system_prompt: Optional[str] = None
+        system_prompt: Optional[str] = None,
+        api_key: Optional[str] = None,
+        provider: Optional[str] = None,
+        model: Optional[str] = None,
+        history: Optional[List[Dict[str, Any]]] = None,
     ) -> Optional[str]:
-        """Attempt to query fine-tuned endpoint with low latency and structured prompt formatting."""
+        """Attempt to query fine-tuned endpoint or real LLM (Gemini, Groq, OpenAI) with low latency."""
+        effective_key = (
+            (api_key or "").strip()
+            or os.getenv("GEMINI_API_KEY", "")
+            or os.getenv("OPENAI_API_KEY", "")
+            or os.getenv("GROQ_API_KEY", "")
+        )
+
+        effective_provider = provider or (
+            "gemini" if effective_key.startswith("AIza")
+            else "groq" if effective_key.startswith("gsk_")
+            else "openai" if effective_key.startswith("sk-")
+            else "gemini" if effective_key
+            else "local"
+        )
+
         if not system_prompt:
             system_prompt = (
-                "You are CIRCUIT AI, an expert criminal intelligence and financial forensic analysis copilot. "
+                "You are CIRCUIT AI, an expert Senior Criminal Intelligence & Cyber Crime Forensic Analysis Copilot "
+                "for the Ministry of Home Affairs / Police Criminal Investigation Department, Government of India. "
                 "Analyze suspect networks, Hawala loops, vehicle convoys, and statutory violations under Indian law "
-                "(IPC, BNS, PMLA, BSA Section 63). Give concise, evidence-grounded responses with citations."
+                "(Bharatiya Nyaya Sanhita BNS 2023, Bharatiya Nagarik Suraksha Sanhita BNSS 2023, "
+                "Bharatiya Sakshya Adhiniyam BSA 2023 Section 63, IT Act 2000, PMLA 2002). "
+                "You also specialize in outside cyber security: MITRE ATT&CK, ransomware response, digital forensics, "
+                "and priority case solving recommendations for investigators. Give clear, evidence-grounded answers."
             )
+
+        # 1. Real Google Gemini API Call if Key Available
+        if effective_key and effective_provider == "gemini":
+            try:
+                gemini_model = model or "gemini-1.5-flash"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={effective_key}"
+                contents = [
+                    {"role": "user", "parts": [{"text": f"{system_prompt}\n\nEvidence Context:\n{graph_context}"}]},
+                    {"role": "model", "parts": [{"text": "Affirmative. CIRCUIT AI operational and standing by."}]},
+                ]
+                if history:
+                    for h in history[-6:]:
+                        role = "model" if h.get("role") == "assistant" else "user"
+                        contents.append({"role": role, "parts": [{"text": h.get("content", "")}]})
+                contents.append({"role": "user", "parts": [{"text": query}]})
+
+                async with httpx.AsyncClient(timeout=12.0) as client:
+                    res = await client.post(url, json={"contents": contents, "generationConfig": {"temperature": 0.2, "maxOutputTokens": 2048}})
+                    if res.status_code == 200:
+                        data = res.json()
+                        text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                        if text:
+                            return text
+            except Exception as e:
+                logger.warning(f"Gemini API call skipped ({e})")
+
+        # 2. Real Groq / OpenAI / OpenRouter Call if Key Available
+        if effective_key and effective_provider in ("groq", "openai", "openrouter"):
+            try:
+                endpoint = (
+                    "https://api.groq.com/openai/v1/chat/completions" if effective_provider == "groq"
+                    else "https://openrouter.ai/api/v1/chat/completions" if effective_provider == "openrouter"
+                    else "https://api.openai.com/v1/chat/completions"
+                )
+                chosen_model = model or (
+                    "llama-3.3-70b-versatile" if effective_provider == "groq"
+                    else "meta-llama/llama-3.3-70b-instruct" if effective_provider == "openrouter"
+                    else "gpt-4o-mini"
+                )
+                messages = [
+                    {"role": "system", "content": f"{system_prompt}\n\nEvidence Context:\n{graph_context}"},
+                ]
+                if history:
+                    for h in history[-6:]:
+                        messages.append({"role": h.get("role", "user"), "content": h.get("content", "")})
+                messages.append({"role": "user", "content": query})
+
+                async with httpx.AsyncClient(timeout=12.0) as client:
+                    res = await client.post(
+                        endpoint,
+                        headers={"Authorization": f"Bearer {effective_key}", "Content-Type": "application/json"},
+                        json={"model": chosen_model, "messages": messages, "temperature": 0.2, "max_tokens": 2048}
+                    )
+                    if res.status_code == 200:
+                        data = res.json()
+                        text = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+                        if text:
+                            return text
+            except Exception as e:
+                logger.warning(f"{effective_provider} call skipped ({e})")
 
         full_prompt = (
             f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n"
@@ -112,7 +195,7 @@ class FineTunedLLMClient:
             f"<|start_header_id|>assistant<|end_header_id|>\n"
         )
 
-        # 1. Try Ollama Native Chat Endpoint (/api/chat)
+        # 3a. Try Ollama Native Chat Endpoint (/api/chat)
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 chat_payload = {
@@ -128,14 +211,13 @@ class FineTunedLLMClient:
                 if res.status_code == 200:
                     data = res.json()
                     response_text = data.get("message", {}).get("content", "").strip()
-                    # If response is a refusal, fall back to deterministic forensic engine
                     refusals = ["i can't provide", "i cannot provide", "i am unable to provide", "i cannot assist"]
                     if response_text and not any(r in response_text.lower() for r in refusals):
                         return response_text
         except Exception as e:
             logger.debug(f"Ollama chat generation skipped ({e})")
 
-        # 1b. Fallback to Ollama /api/generate
+        # 3b. Fallback to Ollama /api/generate
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 payload = {
@@ -154,7 +236,7 @@ class FineTunedLLMClient:
         except Exception as e:
             logger.debug(f"Ollama legacy generation skipped ({e})")
 
-        # 2. Try vLLM / OpenAI Compatible Endpoint
+        # 4. Try vLLM / OpenAI Compatible Endpoint
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 payload = {
@@ -178,3 +260,4 @@ class FineTunedLLMClient:
         return None
 
 finetuned_llm_client = FineTunedLLMClient()
+

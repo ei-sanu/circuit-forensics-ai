@@ -8,7 +8,16 @@ from app.ml.finetuned_llm import finetuned_llm_client
 logger = logging.getLogger("CIRCUIT.CopilotService")
 
 class CopilotService:
-    async def ask_copilot(self, query: str, case_id: Optional[str] = None, user: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def ask_copilot(
+        self,
+        query: str,
+        case_id: Optional[str] = None,
+        user: Dict[str, Any] = None,
+        api_key: Optional[str] = None,
+        provider: Optional[str] = None,
+        model: Optional[str] = None,
+        history: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
         """Ask AI Copilot natural-language investigative query with live database graph state & citations."""
         graph_state = None
         try:
@@ -16,7 +25,15 @@ class CopilotService:
         except Exception as e:
             logger.warning(f"Could not load graph state for Copilot: {e}")
 
-        res = await ml_client.query_copilot(query=query, case_id=case_id, graph_state=graph_state)
+        res = await ml_client.query_copilot(
+            query=query,
+            case_id=case_id,
+            graph_state=graph_state,
+            api_key=api_key,
+            provider=provider,
+            model=model,
+            history=history,
+        )
 
         if user:
             await audit_service.log(

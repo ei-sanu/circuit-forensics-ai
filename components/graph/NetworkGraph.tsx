@@ -907,37 +907,6 @@ export function NetworkGraph({
         </div>
       )}
 
-      {/* Holographic Multi-Spectral Legend Badge */}
-      <div
-        className={`absolute bottom-4 left-4 p-3.5 rounded-2xl border text-xs backdrop-blur-2xl space-y-1.5 shadow-xl z-10 font-mono ${
-          isDark
-            ? 'bg-charcoal-950/90 border-sky-500/30 text-white'
-            : 'bg-white/95 border-slate-200 text-slate-800'
-        }`}
-      >
-        <div className="flex items-center justify-between gap-3">
-          <p className={`text-[9px] font-mono uppercase tracking-wider font-bold flex items-center gap-1.5 ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>
-            <Layers className="w-3 h-3" />
-            <span>Forensic Category Legend</span>
-          </p>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-        </div>
-        <div className="flex flex-wrap gap-2.5 pt-1">
-          {Object.entries(TYPE_CONFIG).map(([type, cfg]) => (
-            <div key={type} className="flex items-center gap-1.5">
-              <span
-                className="w-2.5 h-2.5 rounded-full"
-                style={{ backgroundColor: cfg.color, boxShadow: `0 0 6px ${cfg.neonGlow}` }}
-              />
-              <span className={`capitalize text-[10px] font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{type}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-transparent shadow-[0_0_8px_#ef4444]" />
-            <span className="text-red-500 font-bold text-[10px]">Flagged Border</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

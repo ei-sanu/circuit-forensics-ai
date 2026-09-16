@@ -57,20 +57,62 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#fafbfc] text-charcoal-900 flex flex-col selection:bg-slate-200 selection:text-charcoal-950 font-sans">
+      {/* Official Government of India Statutory Top Banner */}
+      <div className="w-full bg-[#070b12] border-b border-slate-800 text-white text-[11px] px-4 py-1.5 sticky top-0 z-50 shadow-xs">
+        <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            {/* Ashoka Lion Emblem */}
+            <div className="w-5 h-6 text-amber-400 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 64 88" fill="currentColor" className="w-full h-full">
+                <path d="M32 4 C27 4 23 8 23 13 C23 16 25 18 27 20 C25 21 24 23 24 26 C24 30 27 33 32 33 C37 33 40 30 40 26 C40 23 39 21 37 20 C39 18 41 16 41 13 C41 8 37 4 32 4 Z" opacity="0.95" />
+                <path d="M19 12 C14 12 11 16 11 20 C11 23 13 25 15 27 C13 28 12 31 13 34 C14 38 18 40 22 39 C22 36 21 34 21 31 C22 28 21 26 20 24 C21 22 22 20 21 17 C21 14 20 13 19 12 Z" opacity="0.85" />
+                <path d="M45 12 C50 12 53 16 53 20 C53 23 51 25 49 27 C51 28 52 31 51 34 C50 38 46 40 42 39 C42 36 43 34 43 31 C42 28 43 26 44 24 C43 22 42 20 43 17 C43 14 44 13 45 12 Z" opacity="0.85" />
+                <path d="M26 31 C26 31 23 38 23 44 C23 47 25 49 32 49 C39 49 41 47 41 44 C41 38 38 31 38 31 Z" />
+                <rect x="14" y="49" width="36" height="4" rx="1" />
+                <circle cx="32" cy="59" r="6" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                <circle cx="32" cy="59" r="1.5" />
+                <rect x="10" y="65" width="44" height="3" rx="1" />
+                <path d="M15 68 C20 74 24 76 32 76 C40 76 44 74 49 68 Z" opacity="0.9" />
+                <rect x="8" y="77" width="48" height="2" rx="0.5" opacity="0.6" />
+              </svg>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-devanagari font-bold text-slate-100 text-xs">भारत सरकार</span>
+              <span className="text-slate-600">|</span>
+              <span className="font-sans font-bold text-[10.5px] uppercase tracking-wider text-slate-200">
+                GOVERNMENT OF INDIA
+              </span>
+              <span className="text-slate-600 hidden sm:inline">•</span>
+              <span className="text-slate-400 text-[10px] hidden sm:inline">
+                Ministry of Home Affairs • Indian Cyber Crime Coordination Centre (I4C)
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] font-mono text-slate-400">
+            <span className="hidden md:inline">CYBER HELPLINE: 1930</span>
+            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+              OFFICIAL STATUTORY PORTAL
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Floating Pill Navbar with Auth Trigger */}
       <LandingNavbar onOpenAuth={openAuth} />
 
       {/* Hero Section */}
-      <section className="relative pt-36 pb-16 px-6 max-w-6xl mx-auto flex flex-col items-center text-center">
+      <section className="relative pt-28 pb-16 px-6 max-w-6xl mx-auto flex flex-col items-center text-center">
         {/* Subtle Background Glow Elements */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] bg-slate-200/50 blur-[120px] rounded-full pointer-events-none" />
 
         {/* Official Platform Tag Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/90 text-[11px] font-medium text-slate-700 shadow-xs mb-6 backdrop-blur-md">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200/90 text-[11px] font-medium text-slate-700 shadow-xs mb-6 backdrop-blur-md">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-semibold text-charcoal-900">CIRCUIT 2.0</span>
+          <span className="font-devanagari font-bold text-neutral-900">भारत सरकार</span>
+          <span className="text-slate-300">|</span>
+          <span className="font-semibold text-charcoal-900">Government of India</span>
           <span className="text-slate-400">•</span>
-          <span>Criminal Intelligence & Connected-Entity Tracking</span>
+          <span className="font-mono text-slate-600 text-[10px]">Ministry of Home Affairs (I4C)</span>
         </div>
 
         {/* Main Headline */}

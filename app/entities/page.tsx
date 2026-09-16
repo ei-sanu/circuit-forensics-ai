@@ -48,8 +48,9 @@ const TYPE_ICONS: Record<string, any> = {
 
 export default function EntitiesPage() {
   const [entities, setEntities] = useState<EntityRecord[]>(MASTER_ENTITIES);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [selectedType, setSelectedType] = useState<string>('all');
+
   const [searchQuery, setSearchQuery] = useState('');
   const [flaggedOnly, setFlaggedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'influence' | 'name' | 'id'>('influence');

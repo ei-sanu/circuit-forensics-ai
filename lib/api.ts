@@ -9,7 +9,8 @@ interface CacheEntry<T> {
 
 const cache = new Map<string, CacheEntry<any>>();
 const inFlightRequests = new Map<string, Promise<any>>();
-const DEFAULT_TTL_MS = 3500; // 3.5s cache for instant UI interactions
+const DEFAULT_TTL_MS = 300000; // 5 minutes cache for ultra-fast instant UI tab switching
+const REVALIDATE_AFTER_MS = 30000; // Refresh in background after 30 seconds
 
 export function invalidateApiCache(pattern?: string) {
   if (!pattern) {
@@ -33,14 +34,25 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   } else {
     const cached = cache.get(cacheKey);
     const now = Date.now();
-    if (cached && now - cached.timestamp < DEFAULT_TTL_MS) {
-      return cached.data;
+    if (cached) {
+      // If within fresh TTL, return immediately
+      if (now - cached.timestamp < DEFAULT_TTL_MS) {
+        // If older than REVALIDATE_AFTER_MS, revalidate in background without blocking
+        if (now - cached.timestamp > REVALIDATE_AFTER_MS && !inFlightRequests.has(cacheKey)) {
+          executeFetch<T>(endpoint, options, cacheKey, isGet).catch(() => {});
+        }
+        return cached.data;
+      }
     }
     if (inFlightRequests.has(cacheKey)) {
       return inFlightRequests.get(cacheKey)!;
     }
   }
 
+  return executeFetch<T>(endpoint, options, cacheKey, isGet);
+}
+
+async function executeFetch<T>(endpoint: string, options: RequestInit, cacheKey: string, isGet: boolean): Promise<T> {
   const token = getAuthToken();
   const headers = new Headers(options.headers || {});
 
@@ -84,6 +96,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   return fetchPromise;
 }
+
 
 export const api = {
   // Auth
@@ -254,10 +267,21 @@ export const api = {
     }),
 
   // Copilot & RAG
-  askCopilot: (query: string, caseId?: string) =>
+  askCopilot: (
+    query: string,
+    caseId?: string,
+    options?: { apiKey?: string; provider?: string; model?: string; history?: any[] }
+  ) =>
     request<any>('/copilot/ask', {
       method: 'POST',
-      body: JSON.stringify({ query, caseId }),
+      body: JSON.stringify({
+        query,
+        caseId,
+        apiKey: options?.apiKey,
+        provider: options?.provider,
+        model: options?.model,
+        history: options?.history,
+      }),
     }),
   getCopilotModelStatus: () => request<any>('/copilot/model-status'),
   getRAGStatus: () => request<any>('/copilot/rag/status'),
@@ -271,6 +295,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ case_id: caseId }),
     }),
+
 
   // Audit Logs
   getAuditLogs: (params?: { limit?: number; skip?: number; userId?: string; action?: string }) => {

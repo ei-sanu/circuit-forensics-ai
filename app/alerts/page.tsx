@@ -41,8 +41,9 @@ const DETECTORS_LIST = [
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<AlertRecord[]>(MASTER_ALERTS);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
   const [selectedAlert, setSelectedAlert] = useState<AlertRecord | null>(MASTER_ALERTS[0]);
   const [selectedDetector, setSelectedDetector] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');

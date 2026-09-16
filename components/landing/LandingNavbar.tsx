@@ -55,8 +55,8 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 flex justify-center px-4 pt-4">
-      <nav className="w-full max-w-6xl h-16 rounded-full bg-white/80 border border-beige-300/80 shadow-xl shadow-charcoal-900/5 backdrop-blur-2xl px-5 sm:px-6 flex items-center justify-between transition-all">
+    <div className="fixed top-8 sm:top-9 left-0 right-0 z-40 flex justify-center px-4 pt-2">
+      <nav className="w-full max-w-6xl h-16 rounded-full bg-white/85 border border-beige-300/80 shadow-xl shadow-charcoal-900/5 backdrop-blur-2xl px-5 sm:px-6 flex items-center justify-between transition-all">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-full bg-charcoal-900 flex items-center justify-center text-beige-200 font-bold shadow-sm group-hover:scale-105 transition-transform">
@@ -64,10 +64,10 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
           </div>
           <div>
             <span className="font-extrabold text-sm tracking-wider text-charcoal-900 block leading-tight">
-              CIRCUIT<span className="text-charcoal-500 font-normal italic ml-0.5">AI</span>
+              CIRCUIT<span className="text-charcoal-500 font-normal italic ml-0.5">2.0</span>
             </span>
             <span className="text-[9px] font-mono text-charcoal-500 block uppercase tracking-tighter">
-              Law Enforcement Intelligence
+              Govt. of India • LEA Portal
             </span>
           </div>
         </Link>

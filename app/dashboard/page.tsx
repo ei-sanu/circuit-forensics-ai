@@ -22,7 +22,9 @@ import {
   TrendingUp,
   ShieldAlert,
   CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
+
 import {
   AreaChart,
   Area,
@@ -62,7 +64,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [currentUser, setUserState] = useState<AuthUser | null>(null);
   const [activeRole, setActiveRole] = useState<'investigator' | 'analyst' | 'admin' | 'police_station' | 'hr'>('investigator');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Data states
   const [entities, setEntities] = useState<EntityRecord[]>(MASTER_ENTITIES);
@@ -94,7 +96,6 @@ export default function DashboardPage() {
   }, [router]);
 
   const loadDashboardData = async () => {
-    setLoading(true);
     try {
       const [ents, cs, alts, g, logs] = await Promise.all([
         api.getEntities({ limit: 12 }).catch(() => MASTER_ENTITIES),
@@ -112,8 +113,6 @@ export default function DashboardPage() {
       setAuditLogs(logs || []);
     } catch (err) {
       console.error('Failed to load dashboard data', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -142,40 +141,35 @@ export default function DashboardPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-charcoal-950">
-                {activeRole === 'admin' && 'Central Command & Intelligence Directorate'}
-                {activeRole === 'analyst' && 'Financial Forensics & Anomaly Workspace'}
-                {activeRole === 'investigator' && 'Investigative Operations & Case Console'}
-                {activeRole === 'police_station' && 'Police Station Operational Console'}
-                {activeRole === 'hr' && 'HR Directorate & Personnel Vault'}
+              <h2 className="text-xl font-black text-charcoal-950 tracking-tight">
+                {currentUser?.name || 'Inspector Priya Nair'}
               </h2>
-              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 uppercase font-bold">
-                {currentUser?.role?.replace('_', ' ') || 'Authorized'}
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-mono uppercase font-bold tracking-wide">
+                {activeRole.replace('_', ' ')}
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5 font-normal">
-              {currentUser?.name ? `${currentUser.name} • ` : ''}
-              {currentUser?.department || 'Cyber & Financial Crime Intelligence Division'}
-              {currentUser?.badgeNumber ? ` • Badge ${currentUser.badgeNumber}` : ''}
+            <p className="text-xs text-charcoal-600 font-medium mt-0.5">
+              Badge: <span className="font-mono font-semibold text-charcoal-900">{currentUser?.badgeNumber || 'MH-CID-8821'}</span> •{' '}
+              {currentUser?.department || 'State Cyber Crime & Financial Intelligence Division'}
             </p>
           </div>
         </div>
 
-        {/* Officer Credential Badge */}
-        <div className="flex items-center gap-3 text-xs font-medium self-start md:self-auto">
-          <div className="px-3.5 py-1.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-[11px] font-mono">{currentUser?.stationName || 'National Cyber Cell HQ'}</span>
-          </div>
-          {activeRole === 'admin' && (
-            <Link
-              href="/settings?tab=users"
-              className="px-3.5 py-1.5 rounded-2xl bg-charcoal-950 text-white text-[11px] font-semibold hover:bg-charcoal-900 transition flex items-center gap-1.5"
-            >
-              <span>User Governance</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          )}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/copilot"
+            className="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>AI Copilot Advisor</span>
+          </Link>
+          <Link
+            href="/cases"
+            className="px-4 py-2 rounded-2xl bg-charcoal-950 hover:bg-charcoal-800 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition cursor-pointer"
+          >
+            <span>View All Cases</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
 
@@ -190,6 +184,136 @@ export default function DashboardPage() {
           <span>NETWORK NODES: <strong className="text-white font-bold">{Math.max(entities.length, MASTER_ENTITIES.length)}</strong></span>
           <span className="hidden sm:inline">DATABASE HEALTH: <strong className="text-emerald-300 font-bold">100% OPERATIONAL</strong></span>
           <span className="hidden md:inline">INSPECTION NODE: <strong className="text-sky-300 font-bold">NEW DELHI HQ</strong></span>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* RECOMMENDED CASE RESOLUTION PRIORITY FOR INVESTIGATORS */}
+      {/* ========================================================================= */}
+      <div className="p-5 rounded-3xl bg-gradient-to-br from-white to-neutral-50 dark:from-slate-900 dark:to-[#0b101b] border border-blue-200/80 dark:border-blue-900/50 shadow-md space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-neutral-200/60 dark:border-slate-800/60">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+              <ShieldAlert className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
+                <span>Recommended Priority Investigation Queue</span>
+                <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-mono uppercase font-bold">
+                  High Urgency
+                </span>
+              </h3>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
+                Ranked by BNSS Statutory Chargesheet Deadlines, Capital Flight Risk, and Real-Time Intercepts
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/copilot"
+            className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-mono font-semibold flex items-center gap-1"
+          >
+            <span>Ask AI Copilot for Full Priority Dossier</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        {/* Priority Case Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          {/* Priority 1 */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-red-200 dark:border-red-900/40 space-y-2.5 shadow-xs relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-amber-500" />
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 font-bold">
+                PRIORITY #1 • CRITICAL
+              </span>
+              <span className="text-[10px] font-mono text-neutral-400">CR-2026-00124</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
+                Operation Nightfall — Interstate Hawala Ring
+              </h4>
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 leading-relaxed">
+                ₹5.28 Cr volume with active flight risk: Suspect Rashid Al-Mansoor is liquidating Dubai bullion tokens.
+              </p>
+            </div>
+            <div className="p-2 rounded-xl bg-neutral-50 dark:bg-slate-900/90 text-[10px] font-mono text-neutral-600 dark:text-neutral-300 space-y-1 border border-neutral-200/60 dark:border-slate-800">
+              <div className="font-bold text-red-600 dark:text-red-400 uppercase">Recommended Officer Action:</div>
+              <div>1. Issue BOI Lookout Circular (LOC) on P-0004</div>
+              <div>2. Provisional freeze under PMLA Section 5</div>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <Link
+                href="/cases"
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+              >
+                Inspect Case Dossier →
+              </Link>
+            </div>
+          </div>
+
+          {/* Priority 2 */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-amber-200 dark:border-amber-900/40 space-y-2.5 shadow-xs relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-yellow-500" />
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 font-bold">
+                PRIORITY #2 • 14 DAYS TO BAIL
+              </span>
+              <span className="text-[10px] font-mono text-neutral-400">CR-2026-00188</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
+                DarkNet UPI Smurfing & Mule Network
+              </h4>
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 leading-relaxed">
+                Section 187 BNSS 90-day chargesheet deadline in 14 days. Must file to avoid mandatory default bail.
+              </p>
+            </div>
+            <div className="p-2 rounded-xl bg-neutral-50 dark:bg-slate-900/90 text-[10px] font-mono text-neutral-600 dark:text-neutral-300 space-y-1 border border-neutral-200/60 dark:border-slate-800">
+              <div className="font-bold text-amber-600 dark:text-amber-400 uppercase">Recommended Officer Action:</div>
+              <div>1. Finalize bank ledger audit for ACC-918237</div>
+              <div>2. File Section 63 BSA electronic certificate</div>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <Link
+                href="/fir-track"
+                className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+              >
+                Open FIR Tracker →
+              </Link>
+            </div>
+          </div>
+
+          {/* Priority 3 */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-blue-200 dark:border-blue-900/40 space-y-2.5 shadow-xs relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 font-bold">
+                PRIORITY #3 • LIVE INTERCEPT
+              </span>
+              <span className="text-[10px] font-mono text-neutral-400">CR-2026-00204</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
+                Highway Freight Extortion & Convoy
+              </h4>
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 leading-relaxed">
+                ANPR toll plaza sensor hit on NH-48. Fortuner MH-01-EA-9021 tracked escorting illicit container.
+              </p>
+            </div>
+            <div className="p-2 rounded-xl bg-neutral-50 dark:bg-slate-900/90 text-[10px] font-mono text-neutral-600 dark:text-neutral-300 space-y-1 border border-neutral-200/60 dark:border-slate-800">
+              <div className="font-bold text-blue-600 dark:text-blue-400 uppercase">Recommended Officer Action:</div>
+              <div>1. Dispatch Highway Police intercept unit</div>
+              <div>2. Execute non-intrusive container scan</div>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <Link
+                href="/locations"
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+              >
+                Track on Live Map →
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
