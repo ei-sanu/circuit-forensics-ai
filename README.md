@@ -103,12 +103,18 @@ Modernized from legacy IPC codes to official **Bharatiya Nyaya Sanhita (DNS)** s
 * **Centralized Provisioning**: Public self-registration is disabled. All accounts and biometric credentials are authenticated and issued by the HR Directorate or System Administrator.
 * **Immutable Compliance Audit Trail**: Cryptographic logging of every query, mutation, export, and authentication attempt.
 
-### 7. 🧠 100% Local Sovereign AI Copilot & Service-Level RAG
-* **Zero Cloud Dependency & Complete Data Sovereignty**: Sensitive criminal records, FIRs, and bank ledgers remain strictly on-premise on your local machine or intranet. Eliminates reliance on external paid APIs or unreliable cloud notebooks (Google Colab).
-* **Local Meta Llama Copilot (`circuit-copilot`)**: Hosted locally via Ollama with specialized forensic system instructions for Bharatiya Nyaya Sanhita (BNS 2023), PMLA Section 3, and Bharatiya Sakshya Adhiniyam (BSA Section 63). Runs with Apple Metal GPU acceleration on Mac and CUDA on Linux/Windows.
-* **Service-Level FAISS Vector RAG Engine**: High-performance semantic retrieval using `all-MiniLM-L6-v2` embeddings and FAISS index. Automatically parses and embeds all case documents and FIRs into vector space.
-* **Real-time Dual Context Assembly**: Synthesizes live topological metrics (PageRank, betweenness bottlenecks) and retrieved document quotes into unified, evidence-grounded forensic intelligence with clickable court citations.
-* **Local Fine-Tuning Engine**: Includes a standalone script (`scripts/train_local.py`) to run LoRA fine-tuning directly on Apple Silicon MPS, NVIDIA CUDA, or multi-core CPU using `data/train.jsonl`.
+### 7. 🧠 Sovereign AI Investigative Researcher & Service-Level RAG
+* **Zero Cloud Dependency & Sovereign Execution**: Sensitive criminal records, FIRs, and bank ledgers remain strictly on-premise on your local machine or intranet. Eliminates reliance on external paid APIs or third-party cloud services.
+* **Tripartite Evidentiary Framework**:
+  * **Verified Evidence**: Direct, empirical facts extracted from seized FIRs, MCA21 registries, and verified bank statements.
+  * **Analytical Inference**: Rigorous algorithmic interpretations (Brandes betweenness centrality, PageRank, Louvain community clustering, Isolation Forest anomaly detection) framed in objective, non-accusatory language. Structural centrality indicates connectivity in available records, not criminal guilt.
+  * **Potential Connections (`UNVERIFIED — HYPOTHESIS FOR INVESTIGATION`)**: Algorithmic hypotheses generated via Adamic-Adar, Jaccard similarity, and common-neighbor graph topology, prominently tagged with similarity percentage scores and shared intermediaries.
+* **Real-Time Research Trace**: Every response provides an auditable execution trace detailing the exact analytical tools run (`graph_centrality`, `link_prediction`, `anomaly_detection`, `evidence_search`, `statutory_compliance`) and entities evaluated.
+* **Transparent Explainability ("How did CIRCUIT reach this conclusion?")**: Dedicated chain-of-custody accordion exposing the Data Examined, Analysis Conducted, Evidence Reviewed, Key Finding, and Explicit Limitations.
+* **Explicit Uncertainty & Evidentiary Boundaries**: Every major briefing defines "What remains unverified" to ensure analysts and courts understand the boundaries of algorithmic observations under Bharatiya Sakshya Adhiniyam (BSA 2023).
+* **Service-Level FAISS Vector Store**: In-memory and disk-persisted (`rag_cache/global.faiss`) semantic retrieval using `all-MiniLM-L6-v2` embeddings over canonical case records and FIRs.
+* **Local Meta Llama Model (`circuit-copilot`)**: Hosted locally via Ollama with specialized forensic instructions for BNS 2023, BNSS 2023, and BSA 2023 Section 63 digital evidence admissibility.
+* **Local Fine-Tuning Engine**: Standalone LoRA training pipeline (`scripts/train_local.py`) compatible with Apple Silicon Metal (MPS), NVIDIA CUDA, or CPU using domain-specific dataset `data/train.jsonl`.
 
 ---
 
@@ -262,7 +268,7 @@ CIRCUIT implements 5 granular Role-Based Access Control (RBAC) tiers:
 
 ## 🧪 Automated Testing Suite
 
-### 1. Core API Backend Tests (32 Test Suites)
+### 1. Core API Backend Tests (51 Test Cases Across 14 Modules)
 ```bash
 npm run server:test
 # or directly:

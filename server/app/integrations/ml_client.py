@@ -138,14 +138,23 @@ class MLClient:
             )
             res = await self.copilot_engine.answer_query(req)
             return {
-                "answer": f"{res.analytical_reading}\n\n" + "\n".join(res.direct_facts),
+                "answer": res.answer or res.analytical_reading or ("\n\n".join(res.direct_facts)),
                 "confidence": 0.95,
                 "citations": [c.model_dump() for c in res.citations],
-                "suggested_actions": res.suggested_followups,
+                "suggested_actions": res.follow_up_questions or res.suggested_followups,
                 "intent": res.intent,
                 "disclaimer": res.disclaimer,
-                "direct_facts": res.direct_facts,
-                "analytical_reading": res.analytical_reading,
+                "direct_facts": res.verified_evidence or res.direct_facts,
+                "analytical_reading": res.analytical_reading or res.answer,
+                "research_trace": [t.model_dump() if hasattr(t, "model_dump") else t for t in res.research_trace],
+                "verified_evidence": res.verified_evidence,
+                "analytical_findings": res.analytical_findings,
+                "potential_connections": res.potential_connections,
+                "evidence_reviewed": res.evidence_reviewed,
+                "limitations": res.limitations,
+                "metrics": res.metrics,
+                "how_we_reached_this": res.how_we_reached_this,
+                "follow_up_questions": res.follow_up_questions or res.suggested_followups,
             }
 
         except Exception as e:

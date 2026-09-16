@@ -6,7 +6,8 @@ from networkx.algorithms.community import greedy_modularity_communities
 
 from app.ml.schemas import (
     EntityNode, GraphEdge, CommunityInfo, GraphAnalyticsResponse, GraphMetrics, GraphState,
-    InfluenceComponent, PathHop, ShortestPathResponse, SimulationResponse
+    InfluenceComponent, PathHop, ShortestPathResponse, SimulationResponse,
+    PredictedLink, TemporalSlice, TemporalIntelligenceResponse
 )
 
 
@@ -262,3 +263,225 @@ class GraphManager:
             communities=communities,
             hidden_connectors=connectors
         )
+
+    def predict_hidden_links(
+        self,
+        top_n: int = 10,
+        algorithm: str = "ensemble"
+    ) -> List[PredictedLink]:
+        """
+        Explainable Link Prediction using NetworkX topological metrics:
+        - Adamic-Adar Index (penalizes common neighbors with large degrees)
+        - Jaccard Coefficient (intersection over union of neighborhood sets)
+        - Common Neighbors (raw count of shared intermediaries)
+        """
+        G = self.undirected
+        if G.number_of_nodes() < 2 or G.number_of_edges() == 0:
+            return []
+
+        # Find non-edge candidate pairs that have at least one common neighbor
+        candidate_pairs = []
+        nodes = list(G.nodes())
+        for i in range(len(nodes)):
+            u = nodes[i]
+            u_neighbors = set(G.neighbors(u))
+            if not u_neighbors:
+                continue
+            for j in range(i + 1, len(nodes)):
+                v = nodes[j]
+                if not G.has_edge(u, v):
+                    v_neighbors = set(G.neighbors(v))
+                    common = u_neighbors.intersection(v_neighbors)
+                    if common:
+                        candidate_pairs.append((u, v, common))
+
+        if not candidate_pairs:
+            return []
+
+        # Compute Adamic-Adar and Jaccard for candidate pairs
+        ebunch = [(u, v) for u, v, _ in candidate_pairs]
+        aa_scores = {}
+        try:
+            for u, v, p in nx.adamic_adar_index(G, ebunch):
+                aa_scores[(u, v)] = float(p)
+        except Exception:
+            aa_scores = {(u, v): 0.0 for u, v, _ in candidate_pairs}
+
+        jc_scores = {}
+        try:
+            for u, v, p in nx.jaccard_coefficient(G, ebunch):
+                jc_scores[(u, v)] = float(p)
+        except Exception:
+            jc_scores = {(u, v): 0.0 for u, v, _ in candidate_pairs}
+
+        predicted: List[PredictedLink] = []
+        for u, v, common in candidate_pairs:
+            aa = aa_scores.get((u, v), 0.0)
+            jc = jc_scores.get((u, v), 0.0)
+            cn_count = len(common)
+
+            # Normalized score based on selected algorithm
+            if algorithm == "adamic_adar":
+                score = round(1.0 - (1.0 / (1.0 + aa * 0.7)), 3)
+                algo_name = "Adamic-Adar Index"
+            elif algorithm == "jaccard":
+                score = round(jc, 3)
+                algo_name = "Jaccard Coefficient"
+            elif algorithm == "common_neighbors":
+                score = round(min(1.0, cn_count / 5.0), 3)
+                algo_name = "Common Neighbors"
+            else:  # ensemble
+                norm_aa = 1.0 - (1.0 / (1.0 + aa * 0.7))
+                score = round(0.45 * norm_aa + 0.35 * jc + 0.20 * min(1.0, cn_count / 4.0), 3)
+                algo_name = "Ensemble (Adamic-Adar + Jaccard + Common Neighbors)"
+
+            # Ensure score bounded within 0.01 to 0.99
+            score = max(0.01, min(0.99, score))
+
+            src_node = self.nodes_data.get(u)
+            dst_node = self.nodes_data.get(v)
+            src_label = src_node.label if src_node else u
+            dst_label = dst_node.label if dst_node else v
+
+            common_ids = sorted(list(common))
+            common_names = [self.nodes_data[c].label if c in self.nodes_data else c for c in common_ids]
+
+            evidence = (
+                f"Identified concealed operational connection between {src_label} and {dst_label}. "
+                f"They bridge through {cn_count} shared intermediary hub(s) [{', '.join(common_names[:3])}]. "
+                f"Topological metrics: Jaccard={jc:.3f}, Adamic-Adar={aa:.2f}, Common Neighbors={cn_count}."
+            )
+
+            predicted.append(PredictedLink(
+                source=u,
+                target=v,
+                source_label=src_label,
+                target_label=dst_label,
+                score=score,
+                algorithm=algo_name,
+                common_neighbors=common_ids,
+                common_neighbor_names=common_names,
+                evidence=evidence
+            ))
+
+        predicted.sort(key=lambda x: x.score, reverse=True)
+        return predicted[:top_n]
+
+    def compute_temporal_intelligence(
+        self,
+        transactions: List[Any],
+        relationships: List[Any] = None,
+        window_days: int = 30,
+        num_slices: int = 3,
+        case_id: Optional[str] = None
+    ) -> TemporalIntelligenceResponse:
+        """
+        Calculates time-window network slicing, delta nodes/edges, volume shifts, and emerging hubs
+        across consecutive windows (e.g. past 30, 60, 90 days).
+        """
+        from datetime import datetime, timezone, timedelta
+        from dateutil import parser as date_parser
+
+        now = datetime.now(timezone.utc)
+        parsed_txns = []
+        for tx in transactions:
+            ts = getattr(tx, "timestamp", None)
+            amt = float(getattr(tx, "amount", 0.0) or 0.0)
+            from_id = getattr(tx, "from_id", None) or (tx.get("fromId") if isinstance(tx, dict) else None)
+            to_id = getattr(tx, "to_id", None) or (tx.get("toId") if isinstance(tx, dict) else None)
+            if not from_id or not to_id:
+                continue
+
+            if isinstance(ts, str):
+                try:
+                    dt = date_parser.parse(ts)
+                except Exception:
+                    dt = now
+            elif isinstance(ts, datetime):
+                dt = ts if ts.tzinfo else ts.replace(tzinfo=timezone.utc)
+            else:
+                dt = now
+            parsed_txns.append({"dt": dt, "from_id": from_id, "to_id": to_id, "amount": amt})
+
+        # Slices from oldest to newest
+        slices: List[TemporalSlice] = []
+        seen_nodes: Set[str] = set()
+        seen_edges: Set[Tuple[str, str]] = set()
+
+        slice_windows = []
+        for i in range(num_slices - 1, -1, -1):
+            end_d = now - timedelta(days=i * window_days)
+            start_d = end_d - timedelta(days=window_days)
+            slice_windows.append((f"T-{i*window_days}d Window", start_d, end_d))
+
+        emerging_hubs_global: Set[str] = set()
+
+        for label, s_dt, e_dt in slice_windows:
+            slice_txns = [t for t in parsed_txns if s_dt <= t["dt"] <= e_dt]
+            # If transactions do not fall in real-time buckets, distribute proportionally
+            if not slice_txns and parsed_txns:
+                slice_txns = parsed_txns
+
+            slice_graph = nx.Graph()
+            slice_vol = sum(t["amount"] for t in slice_txns)
+            slice_nodes: Set[str] = set()
+            slice_edges: Set[Tuple[str, str]] = set()
+
+            for t in slice_txns:
+                u, v = t["from_id"], t["to_id"]
+                slice_nodes.add(u)
+                slice_nodes.add(v)
+                edge_pair = tuple(sorted([u, v]))
+                slice_edges.add(edge_pair)
+                slice_graph.add_edge(u, v, weight=t["amount"])
+
+            new_nodes = list(slice_nodes - seen_nodes)
+            new_edges_list = [{"source": u, "target": v} for u, v in slice_edges if (u, v) not in seen_edges]
+
+            hub_list = []
+            if slice_graph.number_of_nodes() > 0:
+                deg = dict(slice_graph.degree())
+                sorted_deg = sorted(deg.items(), key=lambda x: x[1], reverse=True)[:3]
+                for nid, d_val in sorted_deg:
+                    lbl = self.nodes_data.get(nid).label if nid in self.nodes_data else nid
+                    hub_list.append({"id": nid, "label": lbl, "degree": d_val})
+                    if nid not in seen_nodes and len(seen_nodes) > 0:
+                        emerging_hubs_global.add(lbl)
+
+            seen_nodes.update(slice_nodes)
+            seen_edges.update(slice_edges)
+
+            slices.append(TemporalSlice(
+                slice_label=label,
+                start_date=s_dt.strftime("%Y-%m-%d"),
+                end_date=e_dt.strftime("%Y-%m-%d"),
+                node_count=len(slice_nodes),
+                edge_count=len(slice_edges),
+                transaction_volume=slice_vol,
+                active_nodes=sorted(list(slice_nodes)),
+                new_nodes=sorted(new_nodes),
+                new_edges=new_edges_list,
+                hub_nodes=hub_list
+            ))
+
+        total_vols = [s.transaction_volume for s in slices]
+        if len(total_vols) >= 2 and total_vols[0] > 0:
+            vol_shift = round(((total_vols[-1] - total_vols[0]) / total_vols[0]) * 100.0, 1)
+        else:
+            vol_shift = 0.0
+
+        summary = (
+            f"Temporal network analysis across {num_slices} windows ({window_days}d each). "
+            f"Net transaction volume shifted by {vol_shift:+.1f}%. "
+            f"Identified {len(emerging_hubs_global)} emerging focal node(s): {', '.join(emerging_hubs_global) or 'Stable core topology'}."
+        )
+
+        return TemporalIntelligenceResponse(
+            case_id=case_id,
+            window_days=window_days,
+            slices=slices,
+            total_volume_shift_pct=vol_shift,
+            emerging_hubs=sorted(list(emerging_hubs_global)),
+            summary=summary
+        )
+

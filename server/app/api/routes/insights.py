@@ -43,8 +43,8 @@ async def get_insights(user: Dict[str, Any] = Depends(get_current_user)) -> Dict
             G.add_edge(r.source_id, r.target_id, weight=r.weight or 1.0, rel_type=r.rel_type)
 
         for tx in transactions:
-            if tx.sender_id and tx.receiver_id:
-                G.add_edge(tx.sender_id, tx.receiver_id, weight=float(tx.amount or 1000.0), rel_type="transferred_money")
+            if tx.from_id and tx.to_id:
+                G.add_edge(tx.from_id, tx.to_id, weight=float(tx.amount or 1000.0), rel_type="transferred_money")
 
         num_nodes = G.number_of_nodes()
         num_edges = G.number_of_edges()
@@ -102,7 +102,7 @@ async def get_insights(user: Dict[str, Any] = Depends(get_current_user)) -> Dict
                 lead_name = f"{lead_obj.name} ({lead_id})" if lead_obj else lead_id
 
                 # Calculate volume
-                c_tx_vol = sum(float(tx.amount) for tx in transactions if tx.sender_id in c or tx.receiver_id in c)
+                c_tx_vol = sum(float(tx.amount) for tx in transactions if tx.from_id in c or tx.to_id in c)
 
                 cluster_names = [
                     "Western Hawala & Shell Financing Ring",

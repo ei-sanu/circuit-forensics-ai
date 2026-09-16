@@ -279,10 +279,76 @@ class CopilotQueryRequest(BaseModel):
 
 
 
+class ResearchTraceStep(BaseModel):
+    tool: str = Field(..., description="Tool or analytical method executed")
+    status: str = Field(default="completed", description="Execution status")
+    description: str = Field(..., description="Factual description of what the tool analyzed")
+
+
 class CopilotQueryResponse(BaseModel):
     intent: str
-    direct_facts: List[str]
-    analytical_reading: str
+    direct_facts: List[str] = Field(default_factory=list)
+    analytical_reading: str = ""
     citations: List[Citation] = Field(default_factory=list)
     suggested_followups: List[str] = Field(default_factory=list)
-    disclaimer: str = "Analytical indicator only. Does not constitute proof of guilt or criminal activity."
+    disclaimer: str = "Analytical observation based on available case data. Does not constitute a determination of guilt or criminal responsibility."
+
+    # Enhanced AI Investigative Researcher fields
+    answer: Optional[str] = None
+    research_trace: List[ResearchTraceStep] = Field(default_factory=list)
+    verified_evidence: List[str] = Field(default_factory=list)
+    analytical_findings: List[str] = Field(default_factory=list)
+    potential_connections: List[Dict[str, Any]] = Field(default_factory=list)
+    evidence_reviewed: List[Dict[str, Any]] = Field(default_factory=list)
+    limitations: List[str] = Field(default_factory=list)
+    metrics: Dict[str, Any] = Field(default_factory=dict)
+    how_we_reached_this: Dict[str, Any] = Field(default_factory=dict)
+    follow_up_questions: List[str] = Field(default_factory=list)
+
+
+# --- Link Prediction & Temporal Intelligence Schemas ---
+class PredictedLink(BaseModel):
+    source: str = Field(..., description="Source entity ID")
+    target: str = Field(..., description="Target entity ID")
+    source_label: Optional[str] = Field(None, description="Source entity name/label")
+    target_label: Optional[str] = Field(None, description="Target entity name/label")
+    score: float = Field(..., ge=0.0, le=1.0, description="Predicted link probability (0.0 to 1.0)")
+    algorithm: str = Field(..., description="Link prediction algorithm or ensemble name")
+    common_neighbors: List[str] = Field(default_factory=list, description="Common intermediary entity IDs")
+    common_neighbor_names: List[str] = Field(default_factory=list, description="Common intermediary entity names")
+    evidence: str = Field(..., description="Factual and topological explanation of the predicted relationship")
+
+
+class PredictLinksRequest(BaseModel):
+    graph: GraphState
+    top_n: int = Field(default=10, ge=1, le=50)
+    algorithm: Optional[str] = Field(default="ensemble", description="ensemble, adamic_adar, jaccard, common_neighbors")
+
+
+class PredictLinksResponse(BaseModel):
+    predicted_links: List[PredictedLink]
+    total_candidates: int
+    algorithm_used: str
+
+
+class TemporalSlice(BaseModel):
+    slice_label: str
+    start_date: str
+    end_date: str
+    node_count: int
+    edge_count: int
+    transaction_volume: float
+    active_nodes: List[str] = Field(default_factory=list)
+    new_nodes: List[str] = Field(default_factory=list)
+    new_edges: List[Dict[str, str]] = Field(default_factory=list)
+    hub_nodes: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class TemporalIntelligenceResponse(BaseModel):
+    case_id: Optional[str]
+    window_days: int
+    slices: List[TemporalSlice]
+    total_volume_shift_pct: float
+    emerging_hubs: List[str]
+    summary: str
+

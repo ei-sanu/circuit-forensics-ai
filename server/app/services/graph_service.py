@@ -217,6 +217,34 @@ class GraphService:
             "remainingEdgesCount": len(G.edges()),
         }
 
+    async def predict_links(self, case_id: Optional[str] = None, top_n: int = 10, algorithm: str = "ensemble") -> Dict[str, Any]:
+        """Predict hidden links across suspect entities using explainable graph topology."""
+        graph_state = await self.get_graph_state(case_id)
+        from app.ml.graph_manager import GraphManager
+        from app.ml.schemas import GraphState, EntityNode, GraphEdge
+        nodes = [EntityNode(**n) for n in graph_state.get("nodes", [])]
+        edges = [GraphEdge(**e) for e in graph_state.get("edges", [])]
+        gm = GraphManager(GraphState(nodes=nodes, edges=edges))
+        predicted = gm.predict_hidden_links(top_n=top_n, algorithm=algorithm)
+        return {
+            "case_id": case_id,
+            "algorithm": algorithm,
+            "total_candidates": len(predicted),
+            "predicted_links": [p.model_dump() for p in predicted]
+        }
+
+    async def get_temporal_intelligence(self, case_id: Optional[str] = None, window_days: int = 30, num_slices: int = 3) -> Dict[str, Any]:
+        """Compute time-window network slicing, delta analysis, and volume shifts."""
+        graph_state = await self.get_graph_state(case_id)
+        txns = await self.get_transactions(case_id, limit=300)
+        from app.ml.graph_manager import GraphManager
+        from app.ml.schemas import GraphState, EntityNode, GraphEdge
+        nodes = [EntityNode(**n) for n in graph_state.get("nodes", [])]
+        edges = [GraphEdge(**e) for e in graph_state.get("edges", [])]
+        gm = GraphManager(GraphState(nodes=nodes, edges=edges))
+        res = gm.compute_temporal_intelligence(transactions=txns, window_days=window_days, num_slices=num_slices, case_id=case_id)
+        return res.model_dump()
+
     async def get_transactions(self, case_id: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
         """List transaction records."""
         maker = get_session_maker()

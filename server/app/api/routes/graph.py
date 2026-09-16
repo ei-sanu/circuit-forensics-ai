@@ -52,3 +52,32 @@ async def get_communications(
     user: Dict[str, Any] = Depends(get_current_user),
 ):
     return await graph_service.get_communications(case_id=caseId, limit=limit)
+
+@router.get("/predict-links", summary="Predict hidden links via Adamic-Adar, Jaccard, and Common Neighbors")
+async def get_predicted_links(
+    caseId: Optional[str] = None,
+    topN: int = Query(10, ge=1, le=50),
+    algorithm: str = Query("ensemble", pattern="^(ensemble|adamic_adar|jaccard|common_neighbors)$"),
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    return await graph_service.predict_links(case_id=caseId, top_n=topN, algorithm=algorithm)
+
+@router.post("/predict-links", summary="Predict hidden links via Adamic-Adar, Jaccard, and Common Neighbors")
+async def post_predicted_links(
+    body: Optional[Dict[str, Any]] = Body(default={}),
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    case_id = body.get("caseId") or body.get("case_id")
+    top_n = int(body.get("topN") or body.get("top_n") or 10)
+    algorithm = body.get("algorithm", "ensemble")
+    return await graph_service.predict_links(case_id=case_id, top_n=top_n, algorithm=algorithm)
+
+@router.get("/temporal-slice", summary="Compute temporal network slicing, delta analysis, and volume shifts")
+async def get_temporal_slice(
+    caseId: Optional[str] = None,
+    windowDays: int = Query(30, ge=7, le=180),
+    numSlices: int = Query(3, ge=2, le=12),
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    return await graph_service.get_temporal_intelligence(case_id=caseId, window_days=windowDays, num_slices=numSlices)
+

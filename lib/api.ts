@@ -384,13 +384,23 @@ export const api = {
     return {
       removedNodes: removedNodeIds,
       fragmentationScore: isMajorRemoved ? 0.78 : 0.22,
+      networkFragilityScore: isMajorRemoved ? 78 : 22,
       isolatedSubgraphs: isMajorRemoved ? 3 : 1,
+      severedEdges: isMajorRemoved ? 6 : 2,
+      financialFlowDisrupted: isMajorRemoved ? 29000000 : 4500000,
+      residualComponents: isMajorRemoved ? 3 : 1,
       impactAssessment: isMajorRemoved
         ? 'CRITICAL BREAKPOINT: Primary finance flow disrupted. Western syndicate decoupled from Southern convoy escort.'
         : 'LOW IMPACT: Peripheral target removal. Alternative routes remain operational.',
       unaffectedClusters: MASTER_INSIGHTS.communities.slice(isMajorRemoved ? 1 : 0),
     };
   },
+  getLabPredictions: (caseId?: string, topN: number = 10) =>
+    request<any>(`/intelligence-lab/predictions?${caseId ? `caseId=${caseId}&` : ''}topN=${topN}`),
+  predictLinks: (caseId?: string, topN: number = 10, algorithm: string = 'ensemble') =>
+    request<any>(`/graph/predict-links?${caseId ? `caseId=${caseId}&` : ''}topN=${topN}&algorithm=${algorithm}`),
+  getLabTemporal: (caseId?: string, windowDays: number = 30) =>
+    request<any>(`/intelligence-lab/temporal?${caseId ? `caseId=${caseId}&` : ''}windowDays=${windowDays}`),
 
   // Transactions
   importTransactions: (formData: FormData) =>

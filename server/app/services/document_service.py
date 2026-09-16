@@ -185,16 +185,35 @@ class DocumentService:
             now = datetime.now(timezone.utc)
             case_id = doc.case_id
 
-            # Commit approved entities
+            # Commit approved entities with temporary-to-permanent ID mapping
             approved_ents = dto.approvedEntities or []
+            id_map: Dict[str, str] = {}
             for ent in approved_ents:
-                ent_id = ent.get("entityId") or f"ENT-{secrets.token_hex(3).upper()}"
+                ent_id = ent.get("entityId") or ent.get("id")
+                # If ID is missing or temporary (e.g. 'temp_...'), assign a canonical ENT-XXXXXX ID
+                if not ent_id or str(ent_id).startswith("temp_"):
+                    ent_id = f"ENT-{secrets.token_hex(3).upper()}"
+
+                # Map all possible identifiers to permanent entity ID
+                for key in ("entityId", "id", "tempId", "temp_id"):
+                    val = ent.get(key)
+                    if val:
+                        id_map[str(val)] = ent_id
+                label = ent.get("label")
+                if label:
+                    id_map[str(label)] = ent_id
+                name = ent.get("name")
+                if name:
+                    id_map[str(name)] = ent_id
+                id_map[str(ent_id)] = ent_id
+                ent["entityId"] = ent_id
+
                 e_res = await session.execute(select(Entity).where(Entity.entity_id == ent_id))
                 e_obj = e_res.scalar_one_or_none()
                 if not e_obj:
                     e_obj = Entity(
                         entity_id=ent_id,
-                        name=ent.get("label", "Unknown Entity"),
+                        name=ent.get("label") or ent.get("name", "Unknown Entity"),
                         type=ent.get("type", "person"),
                         risk_flag=ent.get("riskFlag", False),
                         cases=[case_id] if case_id else [],
@@ -204,7 +223,7 @@ class DocumentService:
                     )
                     session.add(e_obj)
                 else:
-                    e_obj.name = ent.get("label", e_obj.name)
+                    e_obj.name = ent.get("label") or ent.get("name", e_obj.name)
                     e_obj.type = ent.get("type", e_obj.type)
                     e_obj.risk_flag = ent.get("riskFlag", e_obj.risk_flag)
                     if case_id and case_id not in (e_obj.cases or []):
@@ -213,12 +232,16 @@ class DocumentService:
                         e_obj.cases = cases_list
                     e_obj.updated_at = now
 
-            # Commit approved relationships
+            # Commit approved relationships with remapped endpoints
             approved_rels = dto.approvedRelationships or []
             for rel in approved_rels:
-                src = rel.get("sourceId") or rel.get("source")
-                dst = rel.get("targetId") or rel.get("target")
+                raw_src = rel.get("sourceId") or rel.get("source")
+                raw_dst = rel.get("targetId") or rel.get("target")
+                src = id_map.get(str(raw_src), raw_src)
+                dst = id_map.get(str(raw_dst), raw_dst)
                 rtype = rel.get("relType") or rel.get("rel_type")
+                rel["sourceId"] = src
+                rel["targetId"] = dst
                 if src and dst and rtype:
                     r_res = await session.execute(
                         select(Relationship).where(

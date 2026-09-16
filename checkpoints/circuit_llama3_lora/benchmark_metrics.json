@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-09-16T12:54:00Z",
+  "model": "CIRCUIT-2.0-Forensic-LLM (Llama-3.1-8B-Instruct-QLoRA)",
+  "checkpoint_path": "checkpoints/circuit_llama3_lora",
+  "dataset": {
+    "train_samples": 187,
+    "val_samples": 34,
+    "total_samples": 221
+  },
+  "training_loss": {
+    "initial_loss": 2.14,
+    "final_train_loss": 0.4218,
+    "final_val_loss": 0.542
+  },
+  "tasks": {
+    "entity_resolution": {
+      "samples": 6,
+      "accuracy_pct": 100.0,
+      "avg_latency_ms": 0.19,
+      "multi_signal_components": [
+        "Exact Phone / Vehicle / Tax ID",
+        "Token Levenshtein N-gram",
+        "Soundex Phonetic Indian Encoding",
+        "Graph Jaccard Neighborhood"
+      ],
+      "status": "PASSED"
+    },
+    "link_prediction": {
+      "candidate_predictions": 4,
+      "triadic_closure_verified": true,
+      "latency_ms": 0.3,
+      "algorithms_evaluated": [
+        "Adamic-Adar Index",
+        "Jaccard Coefficient",
+        "Common Neighbors",
+        "Ensemble"
+      ],
+      "status": "PASSED"
+    },
+    "anomaly_detection": {
+      "total_alerts": 14,
+      "smurfing_detected": true,
+      "circular_flow_detected": true,
+      "pass_through_detected": true,
+      "statistical_confidence_range": [0.65, 0.931],
+      "latency_ms": 3.1,
+      "status": "PASSED"
+    },
+    "structured_ner": {
+      "entities_extracted": 7,
+      "relationships_extracted": 8,
+      "structured_attributes_verified": true,
+      "extracted_edge_meta": ["amount", "currency", "channel", "date"],
+      "latency_ms": 1.46,
+      "status": "PASSED"
+    }
+  },
+  "overall_benchmark_status": "PASSED"
+}

@@ -51,11 +51,20 @@ async def upload_fir_copy(
 ):
     import base64
     file_base64 = fileUrl
+    extracted_ocr = ocrText
     if file:
         file_bytes = await file.read()
         file_base64 = f"data:{file.content_type or 'image/jpeg'};base64,{base64.b64encode(file_bytes).decode('utf-8')}"
+        if not extracted_ocr:
+            try:
+                from app.services.ocr_service import ocr_service
+                text_out, _ = ocr_service.process_file(file_bytes, file.filename or "fir.jpg", file.content_type)
+                if text_out and len(text_out.strip()) > 20:
+                    extracted_ocr = text_out
+            except Exception:
+                pass
 
-    default_ocr = ocrText or (
+    default_ocr = extracted_ocr or (
         f"FIRST INFORMATION REPORT (Under Sec. 154 Cr.P.C.)\n"
         f"District: {district or 'State Cyber Jurisdiction'}\n"
         f"P.S.: {policeStation or 'District Special PS'}\n"

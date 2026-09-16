@@ -48,6 +48,11 @@ async def lifespan(app: FastAPI):
             document_service.seed_demo_documents(),
             return_exceptions=True,
         )
+        try:
+            from app.services.rag_service import rag_service
+            await rag_service.initialize()
+        except Exception as e:
+            logger.warning(f"RAG startup auto-init notice: {e}")
     except Exception as e:
         logger.warning(f"Startup data sync notice: {e}")
 

@@ -116,6 +116,7 @@ class FineTunedLLMClient:
             else "local"
         )
 
+        has_custom_prompt = bool(system_prompt)
         if not system_prompt:
             system_prompt = (
                 "You are CIRCUIT AI, an expert Senior Criminal Intelligence & Cyber Crime Forensic Analysis Copilot "
@@ -198,12 +199,17 @@ class FineTunedLLMClient:
         # 3a. Try Ollama Native Chat Endpoint (/api/chat)
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
+                chat_messages = []
+                # If a custom system prompt is explicitly provided by caller, include it; otherwise Modelfile system prompt is used
+                if has_custom_prompt:
+                    chat_messages.append({"role": "system", "content": system_prompt})
+                chat_messages.append({
+                    "role": "user",
+                    "content": f"{query}\n\nEvidence Context:\n{graph_context}" if graph_context else query
+                })
                 chat_payload = {
                     "model": FINETUNED_MODEL_NAME,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"{query}\n\nEvidence Context:\n{graph_context}" if graph_context else query}
-                    ],
+                    "messages": chat_messages,
                     "stream": False,
                     "options": {"temperature": 0.2, "top_p": 0.9}
                 }

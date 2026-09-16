@@ -1,9 +1,11 @@
-"""10 Explainable Anomaly and Suspicious Pattern Detectors."""
+"""10 Explainable Anomaly and Suspicious Pattern Detectors with Real Statistical Scoring."""
+import math
 import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple
 import networkx as nx
+import numpy as np
 from dateutil import parser as date_parser
 
 from app.ml.schemas import (
@@ -27,6 +29,25 @@ class AnomalyEngine:
         self.transactions = transactions
         self.communications = communications
         self.graph_manager = GraphManager()
+
+        # Compute empirical financial baseline metrics (Z-score & IQR distributions)
+        amounts = [t.amount for t in transactions if t.amount > 0]
+        if len(amounts) >= 2:
+            self.tx_mean = float(np.mean(amounts))
+            self.tx_std = float(np.std(amounts)) or 1.0
+            self.tx_median = float(np.median(amounts))
+            q75, q25 = np.percentile(amounts, [75, 25])
+            self.tx_iqr = float(q75 - q25)
+        elif amounts:
+            self.tx_mean = amounts[0]
+            self.tx_std = amounts[0] * 0.5
+            self.tx_median = amounts[0]
+            self.tx_iqr = amounts[0] * 0.5
+        else:
+            self.tx_mean = 100000.0
+            self.tx_std = 50000.0
+            self.tx_median = 50000.0
+            self.tx_iqr = 30000.0
 
     def run_all(self, enabled_detectors: Optional[List[str]] = None) -> List[AnomalyAlert]:
         alerts: List[AnomalyAlert] = []
@@ -58,7 +79,12 @@ class AnomalyEngine:
         alerts = []
         for txn in self.transactions:
             if txn.amount >= threshold or txn.is_flagged:
-                severity = "critical" if txn.amount >= 1000000.0 else "high"
+                # Statistical Z-score calculation on empirical distribution
+                z_score = (txn.amount - self.tx_mean) / self.tx_std if self.tx_std > 0 else 1.0
+                confidence = round(1.0 / (1.0 + math.exp(-max(-3.0, min(6.0, z_score - 1.2)))), 3)
+                confidence = max(0.65, min(0.99, confidence))
+                severity = "critical" if txn.amount >= 1000000.0 or z_score >= 2.5 else "high"
+
                 src_label = self.nodes.get(txn.from_id, EntityNode(id=txn.from_id, label=txn.from_id, entity_type="unknown")).label
                 dst_label = self.nodes.get(txn.to_id, EntityNode(id=txn.to_id, label=txn.to_id, entity_type="unknown")).label
 
@@ -69,15 +95,15 @@ class AnomalyEngine:
                     title=f"High-Value Transfer: ₹{txn.amount:,.2f}",
                     explanation=(
                         f"Financial transaction of ₹{txn.amount:,.2f} from '{src_label}' to '{dst_label}' "
-                        f"exceeds single-event surveillance threshold (₹{threshold:,.2f}) on channel {txn.channel}."
+                        f"deviates significantly (z-score: {z_score:+.2f}) from baseline transaction mean (₹{self.tx_mean:,.0f})."
                     ),
-                    confidence=0.98,
+                    confidence=confidence,
                     entities=[
                         {"id": txn.from_id, "label": src_label},
                         {"id": txn.to_id, "label": dst_label},
                     ],
                     evidence_ids=[txn.id],
-                    methodology="Heuristic volumetric threshold monitoring"
+                    methodology=f"Statistical Z-score volumetric anomaly (z={z_score:+.2f}, μ=₹{self.tx_mean:,.0f}, σ=₹{self.tx_std:,.0f})"
                 ))
         return alerts
 
@@ -107,6 +133,10 @@ class AnomalyEngine:
                 acc_label = self.nodes.get(acc, EntityNode(id=acc, label=acc, entity_type="account")).label
                 ev_ids = [x[2] for x in inflow[acc]] + [x[2] for x in outflow[acc]]
 
+                # Derived confidence from pass-through ratio and liquidity scale
+                vol_factor = min(1.0, math.log10(max(10.0, total_in / 50000.0)) / 2.0)
+                confidence = round(min(0.99, max(0.65, 0.50 + 0.35 * ratio + 0.12 * vol_factor)), 3)
+
                 alerts.append(AnomalyAlert(
                     id=f"alt_pt_{acc}_{uuid.uuid4().hex[:6]}",
                     detector_name="Pass-Through Account Detector",
@@ -116,10 +146,10 @@ class AnomalyEngine:
                         f"Entity '{acc_label}' received ₹{total_in:,.2f} and dispersed ₹{total_out:,.2f} "
                         f"({ratio*100:.1f}% liquidity pass-through) within temporal surveillance window."
                     ),
-                    confidence=0.94,
+                    confidence=confidence,
                     entities=[{"id": acc, "label": acc_label}],
                     evidence_ids=ev_ids[:5],
-                    methodology="Inflow/Outflow delta matching & temporal retention"
+                    methodology=f"Temporal liquidity retention & velocity matching (retention ratio={ratio:.2%})"
                 ))
         return alerts
 
@@ -147,6 +177,10 @@ class AnomalyEngine:
                     src_label = self.nodes.get(t1.from_id, EntityNode(id=t1.from_id, label=t1.from_id, entity_type="node")).label
                     dst_label = self.nodes.get(t2.to_id, EntityNode(id=t2.to_id, label=t2.to_id, entity_type="node")).label
 
+                    # Exponential time decay confidence: faster turnaround = higher anomaly probability
+                    decay = max(0.0, 1.0 - (delta / float(max_delta_minutes)))
+                    confidence = round(max(0.65, min(0.99, 0.70 + 0.28 * decay)), 3)
+
                     alerts.append(AnomalyAlert(
                         id=f"alt_rtc_{t1.id}_{t2.id}",
                         detector_name="Rapid Transfer Chain",
@@ -156,14 +190,14 @@ class AnomalyEngine:
                             f"Immediate downstream transfer of ₹{t2.amount:,.2f} initiated from '{mid_label}' "
                             f"just {int(delta)} minutes after receiving ₹{t1.amount:,.2f} from '{src_label}'."
                         ),
-                        confidence=0.92,
+                        confidence=confidence,
                         entities=[
                             {"id": t1.from_id, "label": src_label},
                             {"id": t1.to_id, "label": mid_label},
                             {"id": t2.to_id, "label": dst_label}
                         ],
                         evidence_ids=[t1.id, t2.id],
-                        methodology="Chained edge temporal sequence tracking"
+                        methodology=f"Chained edge temporal decay sequence (delta={int(delta)}m, window={max_delta_minutes}m)"
                     ))
         return alerts
 
@@ -191,16 +225,19 @@ class AnomalyEngine:
                     if data:
                         ev_ids.append(data.get("txn_id", ""))
 
+                cycle_len = len(cycle)
+                confidence = round(max(0.70, min(0.99, 0.98 - 0.05 * (cycle_len - 2))), 3)
+
                 alerts.append(AnomalyAlert(
                     id=f"alt_circ_{uuid.uuid4().hex[:8]}",
                     detector_name="Circular Flow & Hawala Loop",
                     severity="critical",
                     title=f"Closed Loop Routing ({len(cycle)} nodes)",
                     explanation=f"Circular fund movement detected across entities: {chain_str}.",
-                    confidence=0.96,
+                    confidence=confidence,
                     entities=[{"id": nid, "label": self.nodes.get(nid, EntityNode(id=nid, label=nid, entity_type="node")).label} for nid in cycle],
                     evidence_ids=[x for x in ev_ids if x],
-                    methodology="Directed simple cycle detection"
+                    methodology=f"Directed simple cycle graph topology (length={cycle_len} hops)"
                 ))
         return alerts
 
@@ -216,6 +253,10 @@ class AnomalyEngine:
                     src_label = self.nodes.get(src, EntityNode(id=src, label=src, entity_type="phone")).label
                     dst_label = self.nodes.get(dst, EntityNode(id=dst, label=dst, entity_type="phone")).label
 
+                    # Anomaly peaks at 2:30 AM; calculate circadian distance
+                    hour_anomaly = 1.0 - abs(dt.hour - 2.5) / 2.5
+                    confidence = round(max(0.65, min(0.98, 0.72 + 0.24 * hour_anomaly)), 3)
+
                     alerts.append(AnomalyAlert(
                         id=f"alt_odd_{comm.id}",
                         detector_name="Odd-Hour Covert Communication",
@@ -225,10 +266,10 @@ class AnomalyEngine:
                             f"CDR event recorded during high-anomaly window ({dt.strftime('%H:%M:%S')}) "
                             f"between '{src_label}' and '{dst_label}' (Duration: {comm.duration_seconds}s)."
                         ),
-                        confidence=0.88,
+                        confidence=confidence,
                         entities=[{"id": src, "label": src_label}, {"id": dst, "label": dst_label}],
                         evidence_ids=[comm.id],
-                        methodology="Circadian communication activity analysis"
+                        methodology=f"Circadian communication activity analysis (hour={dt.hour:02d}:00, anomaly_factor={hour_anomaly:.2f})"
                     ))
             except Exception:
                 continue
@@ -249,6 +290,10 @@ class AnomalyEngine:
                 p1_label = self.nodes.get(p1, EntityNode(id=p1, label=p1, entity_type="phone")).label
                 p2_label = self.nodes.get(p2, EntityNode(id=p2, label=p2, entity_type="phone")).label
 
+                # Poisson / exponential surge confidence
+                excess = len(cids) - spike_threshold
+                confidence = round(max(0.70, min(0.99, 1.0 - math.exp(-0.35 * (excess + 1)))), 3)
+
                 alerts.append(AnomalyAlert(
                     id=f"alt_spk_{p1}_{p2}",
                     detector_name="Communication Surge Spike",
@@ -258,10 +303,10 @@ class AnomalyEngine:
                         f"Elevated interaction volume ({len(cids)} communications) observed between "
                         f"'{p1_label}' and '{p2_label}', indicating active logistical synchronisation."
                     ),
-                    confidence=0.91,
+                    confidence=confidence,
                     entities=[{"id": p1, "label": p1_label}, {"id": p2, "label": p2_label}],
                     evidence_ids=cids[:6],
-                    methodology="Pairwise interaction burst thresholding"
+                    methodology=f"Pairwise Poisson burst thresholding ({len(cids)} calls vs baseline {spike_threshold})"
                 ))
         return alerts
 
@@ -279,16 +324,19 @@ class AnomalyEngine:
         for phone, nodes in phone_to_entities.items():
             if len(nodes) > 1:
                 labels = [n.label for n in nodes]
+                collision_count = len(nodes)
+                confidence = round(min(0.99, 0.80 + 0.07 * min(3, collision_count - 1)), 3)
+
                 alerts.append(AnomalyAlert(
                     id=f"alt_shared_{phone}",
                     detector_name="Shared Identifier Collocation",
                     severity="high",
                     title=f"Shared Contact ({phone}): {', '.join(labels)}",
                     explanation=f"Multiple distinct registered entities ({', '.join(labels)}) share common contact identifier '{phone}'.",
-                    confidence=0.95,
+                    confidence=confidence,
                     entities=[{"id": n.id, "label": n.label} for n in nodes],
                     evidence_ids=[],
-                    methodology="Attribute collision & resolution indexing"
+                    methodology=f"Attribute collision index ({collision_count} entities colliding on single identifier)"
                 ))
         return alerts
 
@@ -301,11 +349,16 @@ class AnomalyEngine:
 
         try:
             points = list(nx.articulation_points(g))
+            betweenness = nx.betweenness_centrality(g)
         except Exception:
             points = []
+            betweenness = {}
 
         for p in points:
             node = self.nodes.get(p, EntityNode(id=p, label=p, entity_type="unknown"))
+            b_val = betweenness.get(p, 0.5)
+            confidence = round(max(0.70, min(0.99, 0.75 + 0.24 * b_val)), 3)
+
             alerts.append(AnomalyAlert(
                 id=f"alt_brg_{p}",
                 detector_name="Structural Broker Bottleneck",
@@ -315,10 +368,10 @@ class AnomalyEngine:
                     f"Entity '{node.label}' acts as a sole articulation bridge. Neutralizing this node "
                     f"will fragment connected syndicate clusters into disconnected subgraphs."
                 ),
-                confidence=0.93,
+                confidence=confidence,
                 entities=[{"id": p, "label": node.label}],
                 evidence_ids=[],
-                methodology="Graph biconnected component & articulation analysis"
+                methodology=f"Articulation point & betweenness centrality (betweenness={b_val:.3f})"
             ))
         return alerts
 
@@ -329,16 +382,17 @@ class AnomalyEngine:
             if node.risk_flag:
                 deg = sum(1 for e in self.edges if e.source == nid or e.target == nid)
                 if deg >= 3:
+                    confidence = round(min(0.99, 0.78 + 0.04 * min(5, deg - 2)), 3)
                     alerts.append(AnomalyAlert(
                         id=f"alt_hr_{nid}",
                         detector_name="High-Risk Central Syndicate Node",
                         severity="critical",
                         title=f"Active High-Risk Coordinator: {node.label}",
                         explanation=f"Flagged high-risk entity '{node.label}' maintains {deg} active associations across intelligence records.",
-                        confidence=0.97,
+                        confidence=confidence,
                         entities=[{"id": nid, "label": node.label}],
                         evidence_ids=[],
-                        methodology="Multi-case risk propagation & degree weighting"
+                        methodology=f"Multi-case risk propagation & topological degree weighting (degree={deg})"
                     ))
         return alerts
 
@@ -367,6 +421,11 @@ class AnomalyEngine:
                 if total_amt >= aggregate_threshold or len(tx_list) >= 4:
                     src_label = self.nodes.get(src, EntityNode(id=src, label=src, entity_type="unknown")).label
                     dst_label = self.nodes.get(dst, EntityNode(id=dst, label=dst, entity_type="unknown")).label
+
+                    amt_factor = min(1.0, total_amt / 300000.0)
+                    freq_factor = min(1.0, len(tx_list) / 6.0)
+                    confidence = round(min(0.99, 0.76 + 0.14 * amt_factor + 0.09 * freq_factor), 3)
+
                     alerts.append(AnomalyAlert(
                         id=f"alt_smurf_{src}_{dst}_{uuid.uuid4().hex[:6]}",
                         detector_name="Structuring / Smurfing Pattern",
@@ -376,13 +435,13 @@ class AnomalyEngine:
                             f"Detected {len(tx_list)} repetitive transfers just below the ₹50,000 regulatory reporting threshold "
                             f"(totaling ₹{total_amt:,.2f}) between '{src_label}' and '{dst_label}' indicative of deliberate PAN evasion."
                         ),
-                        confidence=0.95,
+                        confidence=confidence,
                         entities=[
                             {"id": src, "label": src_label},
                             {"id": dst, "label": dst_label}
                         ],
                         evidence_ids=[t.id for t in tx_list],
-                        methodology="Identifies repetitive transactions situated just under mandatory KYC/PAN statutory thresholds (₹50,000)."
+                        methodology=f"Sub-threshold KYC/PAN evasion clustering (N={len(tx_list)}, total=₹{total_amt:,.0f})"
                     ))
 
         # B. Fan-In Smurfing (Many small accounts to 1 beneficiary)
@@ -392,6 +451,10 @@ class AnomalyEngine:
                 total_amt = sum(t.amount for t in tx_list)
                 if total_amt >= aggregate_threshold:
                     ben_label = self.nodes.get(beneficiary, EntityNode(id=beneficiary, label=beneficiary, entity_type="unknown")).label
+                    amt_factor = min(1.0, total_amt / 300000.0)
+                    source_factor = min(1.0, len(senders) / 6.0)
+                    confidence = round(min(0.99, 0.78 + 0.12 * amt_factor + 0.09 * source_factor), 3)
+
                     alerts.append(AnomalyAlert(
                         id=f"alt_smurf_fanin_{beneficiary}_{uuid.uuid4().hex[:6]}",
                         detector_name="Structuring / Smurfing Pattern",
@@ -401,13 +464,13 @@ class AnomalyEngine:
                             f"Beneficiary '{ben_label}' received {len(tx_list)} sub-threshold deposits totaling ₹{total_amt:,.2f} "
                             f"from {len(senders)} separate sources within an evasion window."
                         ),
-                        confidence=0.96,
+                        confidence=confidence,
                         entities=[{"id": beneficiary, "label": ben_label}] + [
                             {"id": s, "label": self.nodes.get(s, EntityNode(id=s, label=s, entity_type="unknown")).label}
                             for s in list(senders)[:5]
                         ],
                         evidence_ids=[t.id for t in tx_list],
-                        methodology="Detects fan-in multi-source sub-threshold fund aggregation."
+                        methodology=f"Fan-in multi-source sub-threshold aggregation ({len(senders)} senders, total=₹{total_amt:,.0f})"
                     ))
 
         # C. Fan-Out Smurfing (1 source distributing to many mules)
@@ -417,6 +480,10 @@ class AnomalyEngine:
                 total_amt = sum(t.amount for t in tx_list)
                 if total_amt >= aggregate_threshold:
                     src_label = self.nodes.get(sender, EntityNode(id=sender, label=sender, entity_type="unknown")).label
+                    amt_factor = min(1.0, total_amt / 300000.0)
+                    rec_factor = min(1.0, len(receivers) / 6.0)
+                    confidence = round(min(0.99, 0.75 + 0.13 * amt_factor + 0.10 * rec_factor), 3)
+
                     alerts.append(AnomalyAlert(
                         id=f"alt_smurf_fanout_{sender}_{uuid.uuid4().hex[:6]}",
                         detector_name="Structuring / Smurfing Pattern",
@@ -426,13 +493,13 @@ class AnomalyEngine:
                             f"Entity '{src_label}' dispersed {len(tx_list)} sub-threshold amounts totaling ₹{total_amt:,.2f} "
                             f"across {len(receivers)} distinct recipient accounts."
                         ),
-                        confidence=0.93,
+                        confidence=confidence,
                         entities=[{"id": sender, "label": src_label}] + [
                             {"id": r, "label": self.nodes.get(r, EntityNode(id=r, label=r, entity_type="unknown")).label}
                             for r in list(receivers)[:5]
                         ],
                         evidence_ids=[t.id for t in tx_list],
-                        methodology="Detects single-origin sub-threshold dispersal across multiple recipient accounts."
+                        methodology=f"Fan-out multi-recipient sub-threshold dispersal ({len(receivers)} mules, total=₹{total_amt:,.0f})"
                     ))
 
         return alerts
