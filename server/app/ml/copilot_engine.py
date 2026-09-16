@@ -341,8 +341,8 @@ class CopilotEngine:
             direct_facts=facts,
             analytical_reading=analytical,
             citations=[
-                Citation(source_type="cert_in_directions_2022", count: 1, description="CERT-In 6-Hour Mandatory Reporting Framework"),
-                Citation(source_type="nist_sp800_61", count: 1, description="NIST Computer Security Incident Handling Guide"),
+                Citation(source_type="cert_in_directions_2022", count=1, description="CERT-In 6-Hour Mandatory Reporting Framework"),
+                Citation(source_type="nist_sp800_61", count=1, description="NIST Computer Security Incident Handling Guide"),
             ],
             suggested_followups=[
                 "How do we trace crypto peeling chains to KYC exchanges?",
