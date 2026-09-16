@@ -297,9 +297,12 @@ export function analyzeVideoFrameQuality(video: HTMLVideoElement): FrameQuality 
   const sharpness = Math.min(100, Math.round((gradientSum / pixelCount) * 4.2));
   const skinRatio = skinPixels / pixelCount;
 
-  // Horizontal balance & centering
+  // Horizontal balance & centering (adaptive to distance)
   const isHorizontallyBalanced =
-    skinPixels > 0 && Math.abs(leftSkin - rightSkin) <= skinPixels * 0.70;
+    skinPixels > 0 &&
+    (skinRatio > 0.45
+      ? centerSkin > 50 && Math.abs(leftSkin - rightSkin) <= skinPixels * 0.85
+      : Math.abs(leftSkin - rightSkin) <= skinPixels * 0.75);
   const isCentered = skinRatio >= 0.035 && isHorizontallyBalanced;
 
   // Multi-face heuristic
@@ -311,13 +314,13 @@ export function analyzeVideoFrameQuality(video: HTMLVideoElement): FrameQuality 
   let directionalCue: 'LEFT' | 'RIGHT' | 'TOO_CLOSE' | 'TOO_FAR' | 'PERFECT' | 'NO_FACE' = 'PERFECT';
   if (skinRatio < 0.025) {
     directionalCue = 'NO_FACE';
-  } else if (skinRatio > 0.65) {
+  } else if (skinRatio > 0.94) {
     directionalCue = 'TOO_CLOSE';
-  } else if (skinRatio < 0.04) {
+  } else if (skinRatio < 0.035) {
     directionalCue = 'TOO_FAR';
-  } else if (leftSkin > rightSkin * 1.5 && leftSkin > 110) {
+  } else if (skinRatio < 0.65 && leftSkin > rightSkin * 1.8 && leftSkin > 150) {
     directionalCue = 'RIGHT';
-  } else if (rightSkin > leftSkin * 1.5 && rightSkin > 110) {
+  } else if (skinRatio < 0.65 && rightSkin > leftSkin * 1.8 && rightSkin > 150) {
     directionalCue = 'LEFT';
   } else {
     directionalCue = 'PERFECT';
@@ -334,16 +337,16 @@ export function analyzeVideoFrameQuality(video: HTMLVideoElement): FrameQuality 
   } else if (faceCountEstimate > 1) {
     positionStatus = 'MULTIPLE_FACES';
     statusFeedback = 'Multiple faces detected. Only account holder should be visible.';
-  } else if (brightness < 20) {
+  } else if (brightness < 18) {
     positionStatus = 'POOR_LIGHTING';
     statusFeedback = 'Lighting dark. Move to a brighter area.';
-  } else if (brightness > 245) {
+  } else if (brightness > 248) {
     positionStatus = 'POOR_LIGHTING';
     statusFeedback = 'Lighting too bright or glare detected.';
   } else if (skinRatio < 0.035) {
     positionStatus = 'TOO_FAR';
     statusFeedback = 'Move slightly closer to camera.';
-  } else if (skinRatio > 0.68) {
+  } else if (skinRatio > 0.94) {
     positionStatus = 'TOO_CLOSE';
     statusFeedback = 'Move slightly back from camera.';
   } else if (!isCentered) {
@@ -351,7 +354,10 @@ export function analyzeVideoFrameQuality(video: HTMLVideoElement): FrameQuality 
     statusFeedback = 'Center your face in the oval guide.';
   } else {
     positionStatus = 'GOOD_POSITION';
-    statusFeedback = 'Face aligned. Hold still...';
+    statusFeedback =
+      skinRatio > 0.55
+        ? 'Face aligned (close distance). Hold still...'
+        : 'Face aligned. Hold still...';
     isAcceptable = true;
   }
 
@@ -462,8 +468,9 @@ export class BiometricStabilityTracker {
 
     const now = Date.now();
     const sizeShift = Math.abs(quality.skinRatio - this.lastSkinRatio);
+    const maxAllowedShift = quality.skinRatio > 0.50 ? 0.22 : 0.12;
 
-    if (this.lastSkinRatio > 0 && sizeShift > 0.12) {
+    if (this.lastSkinRatio > 0 && sizeShift > maxAllowedShift) {
       // Abrupt movement - reset stability timer
       this.stabilityStartTime = now;
       this.consecutiveStableCycles = 1;

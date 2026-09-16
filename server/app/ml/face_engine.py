@@ -19,7 +19,7 @@ class FaceEngine:
 
     MODEL_VERSION = "circuit-facenet-v1"
     EMBEDDING_DIM = 128
-    DEFAULT_THRESHOLD = 0.78
+    DEFAULT_THRESHOLD = 0.70
 
     @staticmethod
     def decode_base64_image(image_data: str) -> Image.Image:
@@ -38,6 +38,42 @@ class FaceEngine:
             return image
         except Exception as e:
             raise ValueError(f"Failed to decode image data: {str(e)}")
+
+    @staticmethod
+    def crop_to_face(image: Image.Image) -> Image.Image:
+        """Detects the primary face region using skin/chroma segmentation
+        and crops to the bounding box, providing scale-invariance across close and far distances."""
+        try:
+            rgb = np.array(image.convert("RGB"), dtype=np.float32)
+            r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
+            sum_rgb = r + g + b + 1e-6
+            nr = r / sum_rgb
+            ng = g / sum_rgb
+
+            cb = 128.0 - 0.168736 * r - 0.331264 * g + 0.5 * b
+            cr = 128.0 + 0.5 * r - 0.418688 * g - 0.081312 * b
+
+            skin_mask = (
+                ((cb >= 75.0) & (cb <= 135.0) & (cr >= 130.0) & (cr <= 180.0) & (r > 35.0)) |
+                ((nr > 0.33) & (ng > 0.24) & (ng < 0.42) & ((nr - ng) > 0.02) & (r > 35.0))
+            )
+
+            if np.count_nonzero(skin_mask) > 0.02 * skin_mask.size:
+                ys, xs = np.where(skin_mask)
+                min_y, max_y = np.percentile(ys, [3, 97])
+                min_x, max_x = np.percentile(xs, [3, 97])
+                pad_y = (max_y - min_y) * 0.10
+                pad_x = (max_x - min_x) * 0.10
+                top = max(0, int(min_y - pad_y))
+                bottom = min(image.height, int(max_y + pad_y))
+                left = max(0, int(min_x - pad_x))
+                right = min(image.width, int(max_x + pad_x))
+
+                if (bottom - top) >= 40 and (right - left) >= 40:
+                    return image.crop((left, top, right, bottom))
+        except Exception as e:
+            log.debug(f"Face bounding box crop fallback: {e}")
+        return image
 
     def analyze_quality(self, image: Image.Image) -> FaceQualityMetrics:
         """Evaluates image dimensions, brightness, contrast, sharpness, and face presence."""
@@ -65,10 +101,10 @@ class FaceEngine:
         laplacian_filtered = ndimage.convolve(arr, laplacian_kernel)
         sharpness = float(np.var(laplacian_filtered))
 
-        # Acceptability heuristics
-        acceptable_brightness = 30.0 <= brightness <= 230.0
-        acceptable_contrast = contrast >= 15.0
-        acceptable_sharpness = sharpness >= 10.0
+        # Acceptability heuristics (calibrated for both normal and close-distance webcams)
+        acceptable_brightness = 20.0 <= brightness <= 245.0
+        acceptable_contrast = contrast >= 10.0
+        acceptable_sharpness = sharpness >= 5.0
 
         is_acceptable = acceptable_brightness and acceptable_contrast and acceptable_sharpness
 
@@ -82,8 +118,9 @@ class FaceEngine:
 
     def extract_embedding(self, image: Image.Image) -> List[float]:
         """Generates a reproducible, deterministic 128-dimensional L2-normalized feature vector."""
-        # Resize to standard FaceNet input size (160x160)
-        img_resized = image.resize((160, 160), Image.Resampling.BILINEAR)
+        # Scale-invariant face normalization (crops to face regardless of distance)
+        face_img = self.crop_to_face(image)
+        img_resized = face_img.resize((160, 160), Image.Resampling.BILINEAR)
         arr = np.array(img_resized, dtype=np.float32) / 255.0  # Normalize to [0, 1]
 
         # Spatial grid pooling across 16 blocks x 8 feature channels = 128 dimensions

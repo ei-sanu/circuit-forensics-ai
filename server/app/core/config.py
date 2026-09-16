@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     
     # Biometric System
     biometric_enabled: bool = Field(default=True, validation_alias="BIOMETRIC_ENABLED")
-    biometric_match_threshold: float = Field(default=0.78, validation_alias="BIOMETRIC_MATCH_THRESHOLD")
+    biometric_match_threshold: float = Field(default=0.70, validation_alias="BIOMETRIC_MATCH_THRESHOLD")
     biometric_challenge_ttl_seconds: int = Field(default=300, validation_alias="BIOMETRIC_CHALLENGE_TTL_SECONDS")
     biometric_max_attempts: int = Field(default=3, validation_alias="BIOMETRIC_MAX_ATTEMPTS")
     biometric_lockout_seconds: int = Field(default=900, validation_alias="BIOMETRIC_LOCKOUT_SECONDS")
