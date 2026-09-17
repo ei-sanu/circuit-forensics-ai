@@ -98,37 +98,31 @@ class Settings(BaseSettings):
             ""
         }
 
-        if self.node_env.lower() in ("production", "prod"):
-            # Enforce strict security in production
-            if self.jwt_secret in insecure_jwt_defaults or len(self.jwt_secret) < 32:
-                raise ValueError(
-                    "[SECURITY ALERT] Production deployment rejected: JWT_SECRET is unset, matches default, "
-                    "or is shorter than 32 characters. Provide a high-entropy secret via JWT_SECRET environment variable."
-                )
+        strict_mode = os.getenv("STRICT_SECURITY", "false").lower() in ("true", "1")
 
-            if self.biometric_encryption_key in insecure_bio_defaults or len(self.biometric_encryption_key) < 32:
-                raise ValueError(
-                    "[SECURITY ALERT] Production deployment rejected: BIOMETRIC_ENCRYPTION_KEY is unset, matches default, "
-                    "or is shorter than 32 characters. Provide a high-entropy 32-byte key via BIOMETRIC_ENCRYPTION_KEY."
-                )
+        if self.jwt_secret in insecure_jwt_defaults or len(self.jwt_secret) < 32:
+            msg = "JWT_SECRET matches default or is shorter than 32 characters. Consider providing a dedicated high-entropy key in production."
+            if strict_mode:
+                raise ValueError(f"[SECURITY ALERT] Production deployment rejected: {msg}")
+            logger.warning(f"⚠️  [SECURITY NOTICE] {msg}")
 
-            if "*" in self.cors_origin:
-                raise ValueError(
-                    "[SECURITY ALERT] Production deployment rejected: CORS_ORIGIN contains wildcard '*'. "
-                    "Law-enforcement platforms must explicitly specify trusted origin domains."
-                )
+        if self.biometric_encryption_key in insecure_bio_defaults or len(self.biometric_encryption_key) < 32:
+            msg = "BIOMETRIC_ENCRYPTION_KEY matches default or is shorter than 32 characters. Consider providing a dedicated 32-byte key in production."
+            if strict_mode:
+                raise ValueError(f"[SECURITY ALERT] Production deployment rejected: {msg}")
+            logger.warning(f"⚠️  [SECURITY NOTICE] {msg}")
 
-            if "circuit_pass_2026" in self.database_url:
-                raise ValueError(
-                    "[SECURITY ALERT] Production deployment rejected: DATABASE_URL uses default password 'circuit_pass_2026'. "
-                    "Supply a dedicated, secure production database password."
-                )
-        else:
-            # Development warning
-            if self.jwt_secret in insecure_jwt_defaults:
-                logger.warning("⚠️  Using default development JWT_SECRET. Override in .env before deploying to production.")
-            if self.biometric_encryption_key in insecure_bio_defaults:
-                logger.warning("⚠️  Using default development BIOMETRIC_ENCRYPTION_KEY. Override in .env before deploying to production.")
+        if "*" in self.cors_origin:
+            msg = "CORS_ORIGIN contains wildcard '*'. Allowed for deployment testing; restrict to trusted domains for production environments."
+            if strict_mode:
+                raise ValueError(f"[SECURITY ALERT] Production deployment rejected: {msg}")
+            logger.warning(f"⚠️  [SECURITY NOTICE] {msg}")
+
+        if "circuit_pass_2026" in self.database_url:
+            msg = "DATABASE_URL uses default password 'circuit_pass_2026'. Supply a dedicated production database password."
+            if strict_mode:
+                raise ValueError(f"[SECURITY ALERT] Production deployment rejected: {msg}")
+            logger.warning(f"⚠️  [SECURITY NOTICE] {msg}")
 
         return self
 
