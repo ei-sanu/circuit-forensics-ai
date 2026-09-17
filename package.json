@@ -8,10 +8,10 @@
     "dev:frontend": "next dev -p 8080",
     "dev:all": "node scripts/dev-all.js",
     "clean:ports": "node scripts/clean-ports.js",
-    "build": "npx @opennextjs/cloudflare build --dangerouslyUseUnsupportedNextVersion",
+    "build": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion",
     "build:local": "next build",
-    "deploy": "npx @opennextjs/cloudflare build --dangerouslyUseUnsupportedNextVersion && npx wrangler deploy",
-    "preview": "npx @opennextjs/cloudflare build --dangerouslyUseUnsupportedNextVersion && npx wrangler preview",
+    "deploy": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && wrangler deploy",
+    "preview": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && wrangler preview",
     "start": "next start -p 8080",
     "lint": "next lint",
     "server": "node scripts/run-server.js",
@@ -42,6 +42,7 @@
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.6",
     "@types/cytoscape": "^3.21.6",
     "@types/node": "22.20.3",
     "@types/react": "18.3.31",
@@ -49,6 +50,7 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "wrangler": "^4.133.0"
   }
 }

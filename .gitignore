@@ -9,6 +9,10 @@ services/ml-engine/.venv/
 # Build outputs & caches
 .next/
 **/.next/
+.open-next/
+**/.open-next/
+.wrangler/
+**/.wrangler/
 dist/
 server/dist/
 **/dist/
