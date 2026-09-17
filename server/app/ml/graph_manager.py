@@ -1,6 +1,6 @@
 """NetworkX-based Graph Intelligence Manager."""
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Any
 import networkx as nx
 from networkx.algorithms.community import greedy_modularity_communities
 
