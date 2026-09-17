@@ -109,6 +109,10 @@ class RAGEngine:
     def _load_model(self) -> bool:
         if self._model is not None:
             return True
+        # If running on Render or in lightweight mode, use zero-overhead keyword retrieval to fit in 512MB RAM
+        if os.getenv("LIGHTWEIGHT_RAG", "false").lower() in ("true", "1") or os.getenv("RENDER", "").lower() in ("true", "1"):
+            logger.info("LIGHTWEIGHT_RAG enabled — using zero-overhead keyword retrieval (fits 512MB RAM).")
+            return False
         if not _st_ok or not _numpy_ok:
             return False
         try:
@@ -132,7 +136,7 @@ class RAGEngine:
     # ------------------------------------------------------------------
     def _embed(self, texts: List[str]):
         """Return numpy float32 array (N, dim)."""
-        if not texts:
+        if not texts or self._model is None:
             return None
         vecs = self._model.encode(texts, convert_to_numpy=True, show_progress_bar=False)
         return vecs.astype("float32")
@@ -151,11 +155,12 @@ class RAGEngine:
         Returns:
             {indexed: int, skipped: int, total_chunks: int}
         """
-        if not self._load_model():
-            logger.warning("Embedding model unavailable — skipping vector indexing.")
-            return {"indexed": 0, "skipped": len(docs), "total_chunks": 0, "engine": "keyword_fallback"}
+        has_model = self._load_model()
+        if not has_model:
+            logger.info("Using lightweight zero-overhead keyword RAG indexing.")
+        else:
+            self._ensure_index()
 
-        self._ensure_index()
         indexed = 0
         skipped = 0
         all_chunks: List[str] = []
@@ -192,20 +197,21 @@ class RAGEngine:
             indexed += 1
 
         if all_chunks:
-            logger.info(f"Embedding {len(all_chunks)} chunks from {indexed} documents …")
-            vecs = self._embed(all_chunks)
-            if vecs is not None:
-                self._index.add(vecs)
-                self._chunks.extend(all_chunks)
-                self._meta.extend(all_meta)
-                logger.info(f"RAG index now has {self._index.ntotal} vectors.")
+            self._chunks.extend(all_chunks)
+            self._meta.extend(all_meta)
+            if has_model and self._index is not None:
+                logger.info(f"Embedding {len(all_chunks)} chunks from {indexed} documents …")
+                vecs = self._embed(all_chunks)
+                if vecs is not None:
+                    self._index.add(vecs)
+                    logger.info(f"RAG index now has {self._index.ntotal} vectors.")
 
         return {
             "indexed": indexed,
             "skipped": skipped,
             "total_chunks": len(all_chunks),
-            "total_indexed_vectors": self._index.ntotal if self._index else 0,
-            "engine": "faiss_l2",
+            "total_indexed_vectors": self._index.ntotal if (has_model and self._index) else 0,
+            "engine": "faiss_l2" if (has_model and self._index) else "keyword_overlap",
         }
 
     # ------------------------------------------------------------------
@@ -329,15 +335,16 @@ class RAGEngine:
     # ------------------------------------------------------------------
     def save_index(self, tag: str = "global") -> bool:
         """Persist FAISS index + chunk metadata to disk."""
-        if not _faiss_ok or self._index is None or self._index.ntotal == 0:
+        if not self._chunks:
             return False
         try:
             index_path = os.path.join(INDEX_CACHE_DIR, f"{tag}.faiss")
             meta_path = os.path.join(INDEX_CACHE_DIR, f"{tag}.pkl")
-            faiss.write_index(self._index, index_path)
+            if _faiss_ok and self._index is not None and self._index.ntotal > 0:
+                faiss.write_index(self._index, index_path)
             with open(meta_path, "wb") as f:
                 pickle.dump({"chunks": self._chunks, "meta": self._meta, "doc_ids": self._indexed_doc_ids}, f)
-            logger.info(f"RAG index saved → {index_path}")
+            logger.info(f"RAG metadata saved → {meta_path}")
             return True
         except Exception as e:
             logger.error(f"Failed to save RAG index: {e}")
@@ -345,20 +352,19 @@ class RAGEngine:
 
     def load_index(self, tag: str = "global") -> bool:
         """Reload persisted FAISS index from disk."""
-        index_path = os.path.join(INDEX_CACHE_DIR, f"{tag}.faiss")
         meta_path = os.path.join(INDEX_CACHE_DIR, f"{tag}.pkl")
-        if not os.path.exists(index_path) or not os.path.exists(meta_path):
+        if not os.path.exists(meta_path):
             return False
         try:
-            if not _faiss_ok:
-                return False
-            self._index = faiss.read_index(index_path)
+            index_path = os.path.join(INDEX_CACHE_DIR, f"{tag}.faiss")
+            if _faiss_ok and os.path.exists(index_path):
+                self._index = faiss.read_index(index_path)
             with open(meta_path, "rb") as f:
                 data = pickle.load(f)
             self._chunks = data["chunks"]
             self._meta = data["meta"]
             self._indexed_doc_ids = data.get("doc_ids", set())
-            logger.info(f"RAG index loaded: {self._index.ntotal} vectors from {index_path}")
+            logger.info(f"RAG chunks loaded: {len(self._chunks)} chunks from {meta_path}")
             return True
         except Exception as e:
             logger.error(f"Failed to load RAG index: {e}")
