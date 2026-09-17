@@ -11,3 +11,7 @@ node_modules
 tests
 src
 *.log
+.env
+.env.*
+*.db
+rag_cache
