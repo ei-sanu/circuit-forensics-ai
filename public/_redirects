@@ -1,4 +1,0 @@
-# Cloudflare Pages API Reverse Proxy
-# All frontend calls to /api and /firs are forwarded directly to the live Render backend
-/api/*  https://circuit-forensics-ai.onrender.com/api/:splat  200
-/firs/* https://circuit-forensics-ai.onrender.com/firs/:splat 200
