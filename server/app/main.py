@@ -80,6 +80,7 @@ origins = settings.cors_origins_list
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins if origins != ["*"] else ["*"],
+    allow_origin_regex=r"https://.*\.pages\.dev|https://.*\.workers\.dev|http://localhost:.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

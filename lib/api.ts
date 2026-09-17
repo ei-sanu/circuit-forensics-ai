@@ -1,8 +1,17 @@
 import { getAuthToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL
-  ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '')}/api`
-  : '/api';
+function resolveApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return `${process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '')}/api`;
+  }
+  // In production (Cloudflare deployment), route directly to live Render backend if not on localhost
+  if (typeof window !== 'undefined' && window.location.hostname && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    return 'https://circuit-forensics-ai.onrender.com/api';
+  }
+  return '/api';
+}
+
+const API_BASE = resolveApiBase();
 
 interface CacheEntry<T> {
   data: T;
@@ -311,8 +320,12 @@ export const api = {
     const formData = new FormData();
     formData.append('file', file);
     if (caseId) formData.append('caseId', caseId);
-    const res = await fetch('/api/copilot/upload', {
+    const token = getAuthToken();
+    const headers = new Headers();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    const res = await fetch(`${API_BASE}/copilot/upload`, {
       method: 'POST',
+      headers,
       body: formData,
     });
     return await res.json();
