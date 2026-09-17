@@ -1,5 +1,4 @@
 # Cloudflare Pages API Reverse Proxy
-# If NEXT_PUBLIC_API_URL is not set, Cloudflare Pages will proxy /api requests to your backend
-# Replace YOUR_HF_SPACE_URL with your actual Hugging Face Space URL (e.g. https://username-circuit-backend.hf.space)
-# /api/*  https://YOUR_HF_SPACE_URL/api/:splat  200
-# /firs/* https://YOUR_HF_SPACE_URL/firs/:splat 200
+# All frontend calls to /api and /firs are forwarded directly to the live Render backend
+/api/*  https://circuit-forensics-ai.onrender.com/api/:splat  200
+/firs/* https://circuit-forensics-ai.onrender.com/firs/:splat 200
