@@ -72,15 +72,7 @@ class SovereignForensicEngine:
         history: Optional[List[Dict[str, Any]]] = None,
         document_text: Optional[str] = None,
     ) -> str:
-        """Generate a natural, human-like investigative response directly answering the query."""
-        # Check optional external key if provided by user
-        effective_key = (api_key or "").strip() or os.getenv("GEMINI_API_KEY", "") or os.getenv("OPENAI_API_KEY", "") or os.getenv("GROQ_API_KEY", "")
-        if effective_key:
-            external_resp = await self._try_external_llm(query, graph_context, effective_key, provider, model, history)
-            if external_resp:
-                return external_resp
-
-        # Run Sovereign In-Process Forensic Generation
+        """Generate a natural, human-like investigative response directly answering the query via Sovereign Core."""
         return self._generate_sovereign_response(query, graph_context, history, document_text)
 
     async def _try_external_llm(
