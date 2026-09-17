@@ -1,5 +1,6 @@
+from __future__ import annotations
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from app.integrations.ml_client import ml_client
 from app.services.audit_service import audit_service
 from app.services.graph_service import graph_service

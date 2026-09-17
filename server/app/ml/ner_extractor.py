@@ -1,7 +1,7 @@
-"""Hybrid Rule-based + Gazetteer + Vernacular Contextual NER pipeline tailored for Indian intelligence and law enforcement documents."""
+from __future__ import annotations
 import re
 import uuid
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Dict, Any, Set
 from app.ml.schemas import ExtractedEntity, ProposedRelationship
 
 # Indian State & UT RTO Prefix Codes
