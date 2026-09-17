@@ -29,7 +29,7 @@ class SovereignForensicEngine:
         self.engine_name = "CIRCUIT Sovereign Neural Core"
 
     async def get_status(self) -> Dict[str, Any]:
-        """Return sovereign model runtime and training dataset status."""
+        """Return sovereign model runtime, training dataset status, and Hugging Face connectivity."""
         train_count = 176
         train_file = os.path.join(DATASET_PATH, "train.jsonl")
         if os.path.exists(train_file):
@@ -40,11 +40,13 @@ class SovereignForensicEngine:
                 train_count = 176
 
         has_checkpoints = os.path.exists(os.path.join(CHECKPOINT_PATH, "adapter_config.json"))
+        hf_connected = bool((os.getenv("HF_API_TOKEN") or os.getenv("HUGGINGFACE_API_TOKEN")) and (os.getenv("HF_ENDPOINT_URL") or os.getenv("HUGGINGFACE_ENDPOINT_URL")))
 
         return {
-            "model_name": "CIRCUIT Sovereign Neural Model v2.0",
-            "active_engine": "Sovereign Neural Core (In-Process)",
-            "sovereign": True,
+            "model_name": "CIRCUIT Fine-Tuned Llama-3.1 (Hugging Face Endpoint)" if hf_connected else "CIRCUIT Sovereign Neural Model v2.0",
+            "active_engine": "Hugging Face Dedicated GPU Endpoint" if hf_connected else "Sovereign Neural Core (In-Process)",
+            "sovereign": not hf_connected,
+            "huggingface_connected": hf_connected,
             "offline_ready": True,
             "checkpoint_available": has_checkpoints,
             "checkpoint_path": CHECKPOINT_PATH if has_checkpoints else None,
@@ -72,8 +74,58 @@ class SovereignForensicEngine:
         history: Optional[List[Dict[str, Any]]] = None,
         document_text: Optional[str] = None,
     ) -> str:
-        """Generate a natural, human-like investigative response directly answering the query via Sovereign Core."""
+        """Generate a natural, human-like investigative response directly answering the query.
+        
+        Priority:
+        1. Hugging Face Inference Endpoint (if configured on Render via HF_API_TOKEN & HF_ENDPOINT_URL)
+        2. Sovereign In-Process Forensic Core (default, 100% self-contained)
+        """
+        hf_token = os.getenv("HF_API_TOKEN") or os.getenv("HUGGINGFACE_API_TOKEN")
+        hf_endpoint = os.getenv("HF_ENDPOINT_URL") or os.getenv("HUGGINGFACE_ENDPOINT_URL")
+        if hf_token and hf_endpoint:
+            hf_resp = await self._query_huggingface(query, graph_context, hf_token, hf_endpoint)
+            if hf_resp:
+                return hf_resp
+
         return self._generate_sovereign_response(query, graph_context, history, document_text)
+
+    async def _query_huggingface(
+        self,
+        query: str,
+        graph_context: str,
+        token: str,
+        endpoint_url: str,
+    ) -> Optional[str]:
+        """Query user's deployed fine-tuned model on Hugging Face Inference Endpoint."""
+        import httpx
+        try:
+            prompt = (
+                f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+                f"You are CIRCUIT AI, Senior Criminal Intelligence and Forensic Analyst under Indian Law.\n"
+                f"Evidence Context:\n{graph_context}<|eot_id|>\n"
+                f"<|start_header_id|>user<|end_header_id|>\n\n{query}<|eot_id|>\n"
+                f"<|start_header_id|>assistant<|end_header_id|>\n\n"
+            )
+            headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+            payload = {
+                "inputs": prompt,
+                "parameters": {"max_new_tokens": 512, "temperature": 0.2, "return_full_text": False},
+            }
+            async with httpx.AsyncClient(timeout=25.0) as client:
+                res = await client.post(endpoint_url, headers=headers, json=payload)
+                if res.status_code == 200:
+                    data = res.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        text = data[0].get("generated_text", "").strip()
+                        if text:
+                            return text
+                    elif isinstance(data, dict):
+                        text = data.get("generated_text") or data.get("text", "")
+                        if text:
+                            return text.strip()
+        except Exception as e:
+            logger.warning(f"Hugging Face endpoint query error, using Sovereign Core: {e}")
+        return None
 
     async def _try_external_llm(
         self,

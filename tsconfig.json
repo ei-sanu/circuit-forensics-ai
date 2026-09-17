@@ -38,7 +38,6 @@
   "exclude": [
     "node_modules",
     "server",
-    "services",
-    "open-next.config.ts"
+    "services"
   ]
 }
