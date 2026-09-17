@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className="scroll-smooth">
+    <html lang="en" suppressHydrationWarning className="light scroll-smooth" data-theme="light">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -19,27 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
         <script
-
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                // v2.1 theme reset: clear any stale forced-dark preference from a prior build
-                const THEME_VERSION_KEY = 'circuit_theme_ver';
-                const CURRENT_THEME_VERSION = '2.1';
-                if (localStorage.getItem(THEME_VERSION_KEY) !== CURRENT_THEME_VERSION) {
-                  localStorage.removeItem('circuit_theme');
-                  localStorage.setItem(THEME_VERSION_KEY, CURRENT_THEME_VERSION);
-                }
-                const savedTheme = localStorage.getItem('circuit_theme') || 'system';
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const isDark = savedTheme === 'dark' || (savedTheme === 'system' && prefersDark);
-                if (isDark) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.classList.remove('light');
-                } else {
-                  document.documentElement.classList.add('light');
-                  document.documentElement.classList.remove('dark');
-                }
+                localStorage.setItem('circuit_theme', 'light');
+                document.documentElement.classList.add('light');
+                document.documentElement.classList.remove('dark');
+                document.documentElement.setAttribute('data-theme', 'light');
               } catch (e) {}
 
               window.addEventListener('error', function(e) {
@@ -58,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="bg-[#f8f9fa] dark:bg-[#090d16] text-neutral-900 dark:text-neutral-100 min-h-screen antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200">
+      <body className="bg-white text-neutral-950 min-h-screen antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200">
         <ThemeProvider>
           <AppShell>{children}</AppShell>
         </ThemeProvider>

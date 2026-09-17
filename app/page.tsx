@@ -116,7 +116,7 @@ export default function HomePage() {
         </div>
 
         {/* Main Headline */}
-        <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-extrabold text-charcoal-950 tracking-tight leading-[1.12] max-w-4xl">
+        <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-extrabold text-[#090d16] tracking-tight leading-[1.12] max-w-4xl">
           Connecting Hidden Criminal Networks{' '}
           <span className="text-slate-600 font-bold">Across Jurisdictions.</span>
         </h1>
@@ -132,7 +132,7 @@ export default function HomePage() {
             <>
               <Link
                 href={getDashboardHref()}
-                className="px-7 py-3.5 rounded-full bg-charcoal-950 hover:bg-charcoal-900 text-white font-semibold text-xs shadow-md shadow-charcoal-950/10 transition-all flex items-center gap-2 active:scale-98 cursor-pointer"
+                className="px-7 py-3.5 rounded-full bg-[#090d16] hover:bg-black text-white font-semibold text-xs shadow-md transition-all flex items-center gap-2 active:scale-98 cursor-pointer"
               >
                 <LayoutDashboard className="w-4 h-4 text-slate-300" />
                 <span>Go to Active Workspace</span>
@@ -140,7 +140,7 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/explorer"
-                className="px-7 py-3.5 rounded-full bg-white hover:bg-slate-50 text-charcoal-900 border border-slate-200 text-xs font-semibold transition-all hover:border-slate-300 shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
+                className="px-7 py-3.5 rounded-full bg-white hover:bg-slate-50 text-[#090d16] border border-slate-200 text-xs font-semibold transition-all hover:border-slate-300 shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
               >
                 <Network className="w-4 h-4 text-slate-600" />
                 <span>Open Graph Explorer</span>
@@ -151,14 +151,14 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => openAuth('investigator')}
-                className="px-7 py-3.5 rounded-full bg-charcoal-950 hover:bg-charcoal-900 text-white font-semibold text-xs shadow-md shadow-charcoal-950/10 transition-all flex items-center gap-2 active:scale-98 cursor-pointer"
+                className="px-7 py-3.5 rounded-full bg-[#090d16] hover:bg-black text-white font-semibold text-xs shadow-md transition-all flex items-center gap-2 active:scale-98 cursor-pointer"
               >
                 <span>Access Agency Portal</span>
                 <ArrowRight className="w-4 h-4 text-slate-300" />
               </button>
               <a
                 href="#live-preview"
-                className="px-7 py-3.5 rounded-full bg-white hover:bg-slate-50 text-charcoal-900 border border-slate-200 text-xs font-semibold transition-all hover:border-slate-300 shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
+                className="px-7 py-3.5 rounded-full bg-white hover:bg-slate-50 text-[#090d16] border border-slate-200 text-xs font-semibold transition-all hover:border-slate-300 shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
               >
                 <Layers className="w-4 h-4 text-slate-600" />
                 <span>System Architecture</span>
@@ -170,19 +170,19 @@ export default function HomePage() {
         {/* High-Level Credibility Metrics */}
         <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl pt-8 border-t border-slate-200/70 text-left">
           <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-            <div className="text-xl font-extrabold text-charcoal-950 font-mono">10 Patterns</div>
+            <div className="text-xl font-extrabold text-[#090d16] font-mono">10 Patterns</div>
             <div className="text-[11px] text-slate-500 font-medium mt-0.5">Automated Anomaly Rules</div>
           </div>
           <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-            <div className="text-xl font-extrabold text-charcoal-950 font-mono">Sec. 63 BSA</div>
+            <div className="text-xl font-extrabold text-[#090d16] font-mono">Sec. 63 BSA</div>
             <div className="text-[11px] text-slate-500 font-medium mt-0.5">Section 65B IEA Certified</div>
           </div>
           <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-            <div className="text-xl font-extrabold text-charcoal-950 font-mono">Multi-Modal</div>
+            <div className="text-xl font-extrabold text-[#090d16] font-mono">Multi-Modal</div>
             <div className="text-[11px] text-slate-500 font-medium mt-0.5">FIR, CDR & Banking Streams</div>
           </div>
           <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-            <div className="text-xl font-extrabold text-charcoal-950 font-mono">AES-128</div>
+            <div className="text-xl font-extrabold text-[#090d16] font-mono">AES-128</div>
             <div className="text-[11px] text-slate-500 font-medium mt-0.5">Biometric Identity Vault</div>
           </div>
         </div>

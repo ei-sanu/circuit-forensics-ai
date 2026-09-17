@@ -61,7 +61,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="border-b border-neutral-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#080c14]/95 backdrop-blur-xl sticky top-0 z-20 transition-colors duration-200 select-none">
+    <header className="border-b border-slate-200/90 bg-white/95 backdrop-blur-xl sticky top-0 z-20 transition-colors duration-200 select-none">
       <div className="h-14 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Left: Authentic Ashoka Lion Capital Emblem & Official Bilingual GoI Typography */}
         <div className="flex items-center gap-3">

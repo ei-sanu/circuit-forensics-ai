@@ -21,15 +21,14 @@ const THEME_STORAGE_KEY = 'circuit_theme';
 const ACCENT_STORAGE_KEY = 'circuit_accent';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>('system');
+  const [theme, setThemeState] = useState<ThemeMode>('light');
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
   const [accentColor, setAccentColorState] = useState<AccentColor>('blue');
   const [mounted, setMounted] = useState(false);
 
-  // Helper to get system preference
+  // Helper to get system preference (defaults to light for GoI portal)
   const getSystemTheme = useCallback((): ResolvedTheme => {
-    if (typeof window === 'undefined') return 'light';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return 'light';
   }, []);
 
   // Update DOM classes and CSS variables
@@ -59,14 +58,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from storage
   useEffect(() => {
     setMounted(true);
-    // Respect any version-based reset performed by the layout inline script
-    const savedTheme = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) || 'system';
+    // Force light portal theme
+    const savedTheme = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) || 'light';
     const savedAccent = (localStorage.getItem(ACCENT_STORAGE_KEY) as AccentColor) || 'blue';
 
     setThemeState(savedTheme);
     setAccentColorState(savedAccent);
 
-    const initialResolved: ResolvedTheme = savedTheme === 'system' ? getSystemTheme() : savedTheme;
+    const initialResolved: ResolvedTheme = savedTheme === 'dark' ? 'dark' : 'light';
     setResolvedTheme(initialResolved);
     applyThemeToDOM(initialResolved, savedAccent);
   }, [getSystemTheme, applyThemeToDOM]);
