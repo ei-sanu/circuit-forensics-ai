@@ -59,6 +59,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from storage
   useEffect(() => {
     setMounted(true);
+    // Respect any version-based reset performed by the layout inline script
     const savedTheme = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) || 'system';
     const savedAccent = (localStorage.getItem(ACCENT_STORAGE_KEY) as AccentColor) || 'blue';
 

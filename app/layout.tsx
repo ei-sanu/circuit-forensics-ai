@@ -23,6 +23,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
               try {
+                // v2.1 theme reset: clear any stale forced-dark preference from a prior build
+                const THEME_VERSION_KEY = 'circuit_theme_ver';
+                const CURRENT_THEME_VERSION = '2.1';
+                if (localStorage.getItem(THEME_VERSION_KEY) !== CURRENT_THEME_VERSION) {
+                  localStorage.removeItem('circuit_theme');
+                  localStorage.setItem(THEME_VERSION_KEY, CURRENT_THEME_VERSION);
+                }
                 const savedTheme = localStorage.getItem('circuit_theme') || 'system';
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 const isDark = savedTheme === 'dark' || (savedTheme === 'system' && prefersDark);
