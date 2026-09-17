@@ -61,14 +61,14 @@ export function Topbar() {
   };
 
   return (
-    <header className="border-b border-neutral-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#080c14]/95 backdrop-blur-xl sticky top-0 z-20 transition-colors duration-200 select-none">
+    <header className="border-b border-slate-800/80 bg-[#070b14]/95 backdrop-blur-xl sticky top-0 z-20 transition-colors duration-200 select-none text-white">
       <div className="h-14 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Left: Authentic Ashoka Lion Capital Emblem & Official Bilingual GoI Typography */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5">
             {/* Ashoka Lion Capital Vector Emblem */}
             <div
-              className="flex-shrink-0 w-6 h-8 flex items-center justify-center text-neutral-800 dark:text-amber-400"
+              className="flex-shrink-0 w-6 h-8 flex items-center justify-center text-amber-400"
               title="State Emblem of India • भारत का राजचिह्न"
             >
               <svg viewBox="0 0 64 88" fill="currentColor" className="w-full h-full drop-shadow-xs">
@@ -104,19 +104,19 @@ export function Topbar() {
 
             {/* Official Bilingual Government of India Text Hierarchy */}
             <div className="flex flex-col justify-center leading-tight">
-              <div className="flex items-center gap-1.5 font-devanagari font-bold text-[12px] text-neutral-900 dark:text-neutral-100 tracking-normal">
+              <div className="flex items-center gap-1.5 font-devanagari font-bold text-[12px] text-white tracking-normal">
                 <span>भारत सरकार</span>
-                <span className="text-neutral-300 dark:text-neutral-700 font-sans font-normal">|</span>
-                <span className="font-sans font-bold text-[11px] uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                <span className="text-slate-500 font-sans font-normal">|</span>
+                <span className="font-sans font-bold text-[11px] uppercase tracking-wider text-slate-200">
                   Government of India
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-neutral-600 dark:text-neutral-400 tracking-tight">
-                <span className="font-devanagari font-medium text-neutral-700 dark:text-neutral-300">गृह मंत्रालय</span>
-                <span className="text-neutral-300 dark:text-neutral-700">|</span>
-                <span className="font-medium">Ministry of Home Affairs</span>
-                <span className="text-neutral-300 dark:text-neutral-700 hidden lg:inline">•</span>
-                <span className="text-neutral-500 dark:text-neutral-400 hidden lg:inline font-mono text-[9.5px]">
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 tracking-tight">
+                <span className="font-devanagari font-medium text-slate-300">गृह मंत्रालय</span>
+                <span className="text-slate-600">|</span>
+                <span className="font-medium text-slate-300">Ministry of Home Affairs</span>
+                <span className="text-slate-600 hidden lg:inline">•</span>
+                <span className="text-slate-400 hidden lg:inline font-mono text-[9.5px]">
                   Indian Cyber Crime Coordination Centre (I4C)
                 </span>
               </div>
@@ -127,27 +127,27 @@ export function Topbar() {
         {/* Center / Right Badges & Controls */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Statutory Portal Classification Badge */}
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span>SECURE LEA PORTAL // CERT-IN VERIFIED</span>
           </div>
 
           {/* Official Helpline */}
-          <div className="hidden lg:flex items-center gap-1.5 text-red-600 dark:text-red-400 font-semibold text-[10.5px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20">
+          <div className="hidden lg:flex items-center gap-1.5 text-red-400 font-semibold text-[10.5px] px-2 py-0.5 rounded bg-red-500/15 border border-red-500/30">
             <PhoneCall className="w-3 h-3" />
             <span>Helpline: 1930</span>
           </div>
 
           {/* Security Clearance Badge */}
-          <div className="hidden md:flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 font-semibold font-mono text-[10px]">
+          <div className="hidden md:flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 font-semibold font-mono text-[10px]">
             <Lock className="w-2.5 h-2.5" />
             <span>RESTRICTED // LEVEL-4 LEO</span>
           </div>
 
           {/* Live Accurate IST Clock */}
           {timeStr && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 text-neutral-800 dark:text-neutral-200 font-mono text-[11px] font-medium shadow-2xs">
-              <Clock className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-200 font-mono text-[11px] font-medium shadow-2xs">
+              <Clock className="w-3 h-3 text-slate-400" />
               <span>{timeStr}</span>
             </div>
           )}
@@ -156,9 +156,9 @@ export function Topbar() {
           <Link
             href="/copilot"
             prefetch={true}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold shadow-xs transition"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/60 hover:bg-blue-900/60 border border-blue-800/60 text-blue-300 text-xs font-semibold shadow-xs transition"
           >
-            <Sparkles className="w-3 h-3 text-blue-500" />
+            <Sparkles className="w-3 h-3 text-blue-400" />
             <span className="text-[11px]">AI Copilot</span>
           </Link>
 
@@ -166,9 +166,9 @@ export function Topbar() {
           <Link
             href="/locations"
             prefetch={true}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-slate-900 hover:bg-neutral-50 dark:hover:bg-slate-800 border border-neutral-200 dark:border-slate-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold shadow-xs transition"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-semibold shadow-xs transition"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[11px]">Live Map</span>
           </Link>
 
@@ -176,7 +176,7 @@ export function Topbar() {
           <button
             onClick={cycleTheme}
             title={`Current theme: ${theme} (Click to toggle)`}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-slate-900 hover:bg-neutral-50 dark:hover:bg-slate-800 border border-neutral-200 dark:border-slate-800 text-xs font-medium text-neutral-700 dark:text-neutral-300 shadow-xs transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 shadow-xs transition cursor-pointer"
           >
             {getThemeIcon()}
             <span className="capitalize text-[11px] font-medium hidden md:inline">{theme}</span>

@@ -56,17 +56,17 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
 
   return (
     <div className="fixed top-8 sm:top-9 left-0 right-0 z-40 flex justify-center px-4 pt-2">
-      <nav className="w-full max-w-6xl h-16 rounded-full bg-white/85 border border-beige-300/80 shadow-xl shadow-charcoal-900/5 backdrop-blur-2xl px-5 sm:px-6 flex items-center justify-between transition-all">
+      <nav className="w-full max-w-6xl h-16 rounded-full bg-[#0c1222]/90 border border-slate-800/90 shadow-2xl shadow-black/60 backdrop-blur-2xl px-5 sm:px-6 flex items-center justify-between transition-all">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-full bg-charcoal-900 flex items-center justify-center text-beige-200 font-bold shadow-sm group-hover:scale-105 transition-transform">
-            <ShieldAlert className="w-5 h-5 text-beige-300" />
+          <div className="w-9 h-9 rounded-full bg-sky-600 flex items-center justify-center text-white font-bold shadow-md shadow-sky-600/30 group-hover:scale-105 transition-transform">
+            <ShieldAlert className="w-5 h-5 text-white" />
           </div>
           <div>
-            <span className="font-extrabold text-sm tracking-wider text-charcoal-900 block leading-tight">
-              CIRCUIT<span className="text-charcoal-500 font-normal italic ml-0.5">2.0</span>
+            <span className="font-extrabold text-sm tracking-wider text-white block leading-tight">
+              CIRCUIT<span className="text-sky-400 font-normal italic ml-0.5">2.0</span>
             </span>
-            <span className="text-[9px] font-mono text-charcoal-500 block uppercase tracking-tighter">
+            <span className="text-[9px] font-mono text-slate-400 block uppercase tracking-tighter">
               Govt. of India • LEA Portal
             </span>
           </div>
@@ -78,15 +78,15 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
             /* Logged In State */
             <div className="flex items-center gap-2.5">
               {/* User Profile Pill */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-charcoal-950/5 border border-beige-300/80">
-                <div className="w-6 h-6 rounded-full bg-charcoal-900 text-white flex items-center justify-center text-[10px] font-bold">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80">
+                <div className="w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
                   {user.name ? user.name[0].toUpperCase() : <User className="w-3 h-3" />}
                 </div>
                 <div className="text-left">
-                  <p className="text-[11px] font-bold text-charcoal-950 leading-tight truncate max-w-[110px]">
+                  <p className="text-[11px] font-bold text-white leading-tight truncate max-w-[110px]">
                     {user.name || user.email}
                   </p>
-                  <p className="text-[9px] font-mono text-charcoal-500 uppercase tracking-tight">
+                  <p className="text-[9px] font-mono text-slate-400 uppercase tracking-tight">
                     {getRoleLabel()}
                   </p>
                 </div>
@@ -95,9 +95,9 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
               {/* Go to Dashboard Button */}
               <Link
                 href={getDashboardHref()}
-                className="px-4 py-2 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-beige-100 font-bold shadow-md shadow-charcoal-900/15 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                className="px-4 py-2 rounded-full bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-md shadow-sky-600/25 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
               >
-                <LayoutDashboard className="w-3.5 h-3.5 text-beige-300" />
+                <LayoutDashboard className="w-3.5 h-3.5 text-white" />
                 <span>Dashboard</span>
               </Link>
 
@@ -105,7 +105,7 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
               <button
                 onClick={handleLogout}
                 title="Sign Out of Session"
-                className="p-2 rounded-full text-charcoal-600 hover:text-red-600 hover:bg-red-50 transition cursor-pointer border border-transparent hover:border-red-200"
+                className="p-2 rounded-full text-slate-400 hover:text-red-400 hover:bg-slate-800 transition cursor-pointer border border-transparent hover:border-slate-700"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -116,17 +116,17 @@ export function LandingNavbar({ onOpenAuth }: LandingNavbarProps) {
               <button
                 type="button"
                 onClick={() => onOpenAuth?.('investigator')}
-                className="text-charcoal-700 hover:text-charcoal-950 transition-colors px-3 py-1.5 rounded-full hover:bg-beige-200/60 font-semibold cursor-pointer"
+                className="text-slate-300 hover:text-white transition-colors px-3.5 py-1.5 rounded-full hover:bg-slate-800/80 font-semibold cursor-pointer"
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => onOpenAuth?.('investigator')}
-                className="px-4 py-2 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-beige-100 font-bold shadow-md shadow-charcoal-900/15 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                className="px-4 py-2 rounded-full bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-md shadow-sky-600/25 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
               >
                 <span>Launch Console</span>
-                <ArrowRight className="w-3.5 h-3.5 text-beige-300" />
+                <ArrowRight className="w-3.5 h-3.5 text-white" />
               </button>
             </div>
           )}

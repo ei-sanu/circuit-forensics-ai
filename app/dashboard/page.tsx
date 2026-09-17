@@ -128,28 +128,28 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 text-charcoal-900 pb-12">
+    <div className="space-y-6 text-slate-100 pb-12">
       {/* Executive Operational Header (Strictly Bound to Logged-in User Profile) */}
-      <div className="p-6 rounded-3xl bg-white border border-slate-200/90 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+      <div className="p-6 rounded-3xl bg-[#0c1222]/95 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-charcoal-950 text-white flex items-center justify-center font-bold shadow-md">
-            {activeRole === 'admin' && <Shield className="w-6 h-6 text-slate-200" />}
-            {activeRole === 'analyst' && <Activity className="w-6 h-6 text-slate-200" />}
-            {activeRole === 'investigator' && <Briefcase className="w-6 h-6 text-slate-200" />}
-            {activeRole === 'police_station' && <ShieldAlert className="w-6 h-6 text-slate-200" />}
-            {activeRole === 'hr' && <Users className="w-6 h-6 text-slate-200" />}
+          <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-700/60 text-white flex items-center justify-center font-bold shadow-md">
+            {activeRole === 'admin' && <Shield className="w-6 h-6 text-sky-400" />}
+            {activeRole === 'analyst' && <Activity className="w-6 h-6 text-sky-400" />}
+            {activeRole === 'investigator' && <Briefcase className="w-6 h-6 text-sky-400" />}
+            {activeRole === 'police_station' && <ShieldAlert className="w-6 h-6 text-sky-400" />}
+            {activeRole === 'hr' && <Users className="w-6 h-6 text-sky-400" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-black text-charcoal-950 tracking-tight">
+              <h2 className="text-xl font-black text-white tracking-tight">
                 {currentUser?.name || 'Inspector Priya Nair'}
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-mono uppercase font-bold tracking-wide">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-sky-400 border border-slate-700 text-[10px] font-mono uppercase font-bold tracking-wide">
                 {activeRole.replace('_', ' ')}
               </span>
             </div>
-            <p className="text-xs text-charcoal-600 font-medium mt-0.5">
-              Badge: <span className="font-mono font-semibold text-charcoal-900">{currentUser?.badgeNumber || 'MH-CID-8821'}</span> •{' '}
+            <p className="text-xs text-slate-400 font-medium mt-0.5">
+              Badge: <span className="font-mono font-semibold text-slate-200">{currentUser?.badgeNumber || 'MH-CID-8821'}</span> •{' '}
               {currentUser?.department || 'State Cyber Crime & Financial Intelligence Division'}
             </p>
           </div>
@@ -158,14 +158,14 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/copilot"
-            className="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer"
+            className="px-4 py-2 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-600/30 transition cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>AI Copilot Advisor</span>
           </Link>
           <Link
             href="/cases"
-            className="px-4 py-2 rounded-2xl bg-charcoal-950 hover:bg-charcoal-800 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition cursor-pointer"
+            className="px-4 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition cursor-pointer"
           >
             <span>View All Cases</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -220,31 +220,31 @@ export default function DashboardPage() {
         {/* Priority Case Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
           {/* Priority 1 */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-red-200 dark:border-red-900/40 space-y-2.5 shadow-xs relative overflow-hidden">
+          <div className="p-4 rounded-2xl bg-[#0c1222] border border-red-900/40 space-y-2.5 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-amber-500" />
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-red-950/80 text-red-400 border border-red-800/50 font-bold">
                 PRIORITY #1 • CRITICAL
               </span>
-              <span className="text-[10px] font-mono text-neutral-400">CR-2026-00124</span>
+              <span className="text-[10px] font-mono text-slate-400">CR-2026-00124</span>
             </div>
             <div>
-              <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
+              <h4 className="text-xs font-bold text-white">
                 Operation Nightfall — Interstate Hawala Ring
               </h4>
-              <p className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 leading-relaxed">
+              <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
                 ₹5.28 Cr volume with active flight risk: Suspect Rashid Al-Mansoor is liquidating Dubai bullion tokens.
               </p>
             </div>
-            <div className="p-2 rounded-xl bg-neutral-50 dark:bg-slate-900/90 text-[10px] font-mono text-neutral-600 dark:text-neutral-300 space-y-1 border border-neutral-200/60 dark:border-slate-800">
-              <div className="font-bold text-red-600 dark:text-red-400 uppercase">Recommended Officer Action:</div>
+            <div className="p-2 rounded-xl bg-slate-950/80 text-[10px] font-mono text-slate-300 space-y-1 border border-slate-800">
+              <div className="font-bold text-red-400 uppercase">Recommended Officer Action:</div>
               <div>1. Issue BOI Lookout Circular (LOC) on P-0004</div>
               <div>2. Provisional freeze under PMLA Section 5</div>
             </div>
             <div className="flex items-center justify-between pt-1">
               <Link
                 href="/cases"
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-sky-400 hover:text-sky-300 hover:underline flex items-center gap-1"
               >
                 Inspect Case Dossier →
               </Link>
@@ -252,31 +252,31 @@ export default function DashboardPage() {
           </div>
 
           {/* Priority 2 */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-amber-200 dark:border-amber-900/40 space-y-2.5 shadow-xs relative overflow-hidden">
+          <div className="p-4 rounded-2xl bg-[#0c1222] border border-amber-900/40 space-y-2.5 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-yellow-500" />
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-950/80 text-amber-400 border border-amber-800/50 font-bold">
                 PRIORITY #2 • 14 DAYS TO BAIL
               </span>
-              <span className="text-[10px] font-mono text-neutral-400">CR-2026-00188</span>
+              <span className="text-[10px] font-mono text-slate-400">CR-2026-00188</span>
             </div>
             <div>
-              <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
+              <h4 className="text-xs font-bold text-white">
                 DarkNet UPI Smurfing & Mule Network
               </h4>
-              <p className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 leading-relaxed">
+              <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
                 Section 187 BNSS 90-day chargesheet deadline in 14 days. Must file to avoid mandatory default bail.
               </p>
             </div>
-            <div className="p-2 rounded-xl bg-neutral-50 dark:bg-slate-900/90 text-[10px] font-mono text-neutral-600 dark:text-neutral-300 space-y-1 border border-neutral-200/60 dark:border-slate-800">
-              <div className="font-bold text-amber-600 dark:text-amber-400 uppercase">Recommended Officer Action:</div>
+            <div className="p-2 rounded-xl bg-slate-950/80 text-[10px] font-mono text-slate-300 space-y-1 border border-slate-800">
+              <div className="font-bold text-amber-400 uppercase">Recommended Officer Action:</div>
               <div>1. Finalize bank ledger audit for ACC-918237</div>
               <div>2. File Section 63 BSA electronic certificate</div>
             </div>
             <div className="flex items-center justify-between pt-1">
               <Link
                 href="/fir-track"
-                className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1"
               >
                 Open FIR Tracker →
               </Link>
@@ -284,31 +284,31 @@ export default function DashboardPage() {
           </div>
 
           {/* Priority 3 */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-blue-200 dark:border-blue-900/40 space-y-2.5 shadow-xs relative overflow-hidden">
+          <div className="p-4 rounded-2xl bg-[#0c1222] border border-sky-900/40 space-y-2.5 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-sky-950/80 text-sky-400 border border-sky-800/50 font-bold">
                 PRIORITY #3 • LIVE INTERCEPT
               </span>
-              <span className="text-[10px] font-mono text-neutral-400">CR-2026-00204</span>
+              <span className="text-[10px] font-mono text-slate-400">CR-2026-00204</span>
             </div>
             <div>
-              <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
+              <h4 className="text-xs font-bold text-white">
                 Highway Freight Extortion & Convoy
               </h4>
-              <p className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 leading-relaxed">
+              <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
                 ANPR toll plaza sensor hit on NH-48. Fortuner MH-01-EA-9021 tracked escorting illicit container.
               </p>
             </div>
-            <div className="p-2 rounded-xl bg-neutral-50 dark:bg-slate-900/90 text-[10px] font-mono text-neutral-600 dark:text-neutral-300 space-y-1 border border-neutral-200/60 dark:border-slate-800">
-              <div className="font-bold text-blue-600 dark:text-blue-400 uppercase">Recommended Officer Action:</div>
+            <div className="p-2 rounded-xl bg-slate-950/80 text-[10px] font-mono text-slate-300 space-y-1 border border-slate-800">
+              <div className="font-bold text-sky-400 uppercase">Recommended Officer Action:</div>
               <div>1. Dispatch Highway Police intercept unit</div>
               <div>2. Execute non-intrusive container scan</div>
             </div>
             <div className="flex items-center justify-between pt-1">
               <Link
                 href="/locations"
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-sky-400 hover:text-sky-300 hover:underline flex items-center gap-1"
               >
                 Track on Live Map →
               </Link>
@@ -385,20 +385,20 @@ export default function DashboardPage() {
       <div className="p-6 rounded-3xl glass-panel space-y-4 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold text-charcoal-950 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-sky-700" />
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-sky-400" />
               <span>60-Day Network Activity & Velocity Trends</span>
             </h3>
-            <p className="text-[11px] text-charcoal-600 mt-0.5">
+            <p className="text-[11px] text-slate-400 mt-0.5">
               Aggregated daily volume, multi-hop financial transfers, and odd-hour communication surges.
             </p>
           </div>
 
-          <div className="flex items-center gap-1 p-1 rounded-full bg-white border border-beige-300 text-xs">
+          <div className="flex items-center gap-1 p-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
             <button
               onClick={() => setActiveMetricTab('transactions')}
               className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
-                activeMetricTab === 'transactions' ? 'bg-charcoal-900 text-beige-100' : 'text-charcoal-600 hover:text-charcoal-950'
+                activeMetricTab === 'transactions' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
               }`}
             >
               Transactions
@@ -406,7 +406,7 @@ export default function DashboardPage() {
             <button
               onClick={() => setActiveMetricTab('volumeLakhs')}
               className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
-                activeMetricTab === 'volumeLakhs' ? 'bg-charcoal-900 text-beige-100' : 'text-charcoal-600 hover:text-charcoal-950'
+                activeMetricTab === 'volumeLakhs' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
               }`}
             >
               Volume (₹ Lakhs)
@@ -414,7 +414,7 @@ export default function DashboardPage() {
             <button
               onClick={() => setActiveMetricTab('anomalies')}
               className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
-                activeMetricTab === 'anomalies' ? 'bg-charcoal-900 text-beige-100' : 'text-charcoal-600 hover:text-charcoal-950'
+                activeMetricTab === 'anomalies' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
               }`}
             >
               ML Anomalies
@@ -439,10 +439,10 @@ export default function DashboardPage() {
                   <stop offset="95%" stopColor="#dc2626" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="dayLabel" tick={{ fontSize: 10, fill: '#64748b' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="dayLabel" tick={{ fontSize: 10, fill: '#94a3b8' }} />
               <YAxis
-                tick={{ fontSize: 10, fill: '#64748b' }}
+                tick={{ fontSize: 10, fill: '#94a3b8' }}
                 tickFormatter={(val) => (activeMetricTab === 'volumeLakhs' ? `₹${val}L` : `${val}`)}
               />
               <Tooltip
@@ -464,8 +464,8 @@ export default function DashboardPage() {
                     }
 
                     return (
-                      <div className="p-3 bg-charcoal-950 text-white rounded-2xl shadow-xl border border-charcoal-800 text-xs space-y-1">
-                        <p className="font-semibold text-charcoal-400">{label}</p>
+                      <div className="p-3 bg-[#0c1222] text-white rounded-2xl shadow-xl border border-slate-700 text-xs space-y-1">
+                        <p className="font-semibold text-slate-400">{label}</p>
                         <p className="text-sm font-bold flex items-center gap-1.5" style={{ color }}>
                           <span>{title}:</span>
                           <span className="font-mono text-white">{formattedVal}</span>
@@ -497,10 +497,10 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 p-6 rounded-3xl glass-panel space-y-4 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-charcoal-950">Top Influential Entities</h3>
-              <p className="text-[11px] text-charcoal-600 mt-0.5">Click any entity to inspect its profile and linked cases.</p>
+              <h3 className="text-sm font-bold text-white">Top Influential Entities</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">Click any entity to inspect its profile and linked cases.</p>
             </div>
-            <Link href="/entities" className="text-xs text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1">
+            <Link href="/entities" className="text-xs text-sky-400 hover:text-sky-300 font-bold flex items-center gap-1">
               <span>Full Registry</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -509,7 +509,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-beige-300 text-charcoal-500 font-medium">
+                <tr className="border-b border-slate-800 text-slate-400 font-medium">
                   <th className="pb-3 font-semibold">Entity</th>
                   <th className="pb-3 font-semibold">Type</th>
                   <th className="pb-3 font-semibold">Influence</th>
@@ -517,31 +517,31 @@ export default function DashboardPage() {
                   <th className="pb-3 font-semibold text-right">Quick Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-beige-200">
+              <tbody className="divide-y divide-slate-800/80">
                 {entities.slice(0, 6).map((e) => (
                   <tr
                     key={e.entityId}
                     onClick={() => setSelectedEntity(e)}
-                    className="hover:bg-white/70 transition cursor-pointer group"
+                    className="hover:bg-slate-800/60 transition cursor-pointer group"
                   >
-                    <td className="py-3 font-medium text-charcoal-950 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
+                    <td className="py-3 font-medium text-white flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-slate-800 text-sky-400 border border-slate-700 flex items-center justify-center text-[10px] font-bold">
                         {e.label.charAt(0)}
                       </div>
                       <div>
-                        <span className="group-hover:text-sky-700 transition font-bold">{e.label}</span>
-                        <span className="text-[10px] text-charcoal-400 font-mono ml-1.5">({e.entityId})</span>
+                        <span className="group-hover:text-sky-400 transition font-bold">{e.label}</span>
+                        <span className="text-[10px] text-slate-400 font-mono ml-1.5">({e.entityId})</span>
                       </div>
                     </td>
-                    <td className="py-3 capitalize text-charcoal-700">{e.type}</td>
-                    <td className="py-3 font-mono font-bold text-charcoal-900">{e.influenceScore || 80}/100</td>
+                    <td className="py-3 capitalize text-slate-300">{e.type}</td>
+                    <td className="py-3 font-mono font-bold text-white">{e.influenceScore || 80}/100</td>
                     <td className="py-3">
                       {e.riskFlag ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-700 border border-red-200 font-semibold">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-red-950/80 text-red-400 border border-red-800/50 font-semibold">
                           Flagged Target
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-white text-charcoal-600 border border-beige-300">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
                           Normal
                         </span>
                       )}
@@ -552,7 +552,7 @@ export default function DashboardPage() {
                           ev.stopPropagation();
                           setSelectedEntity(e);
                         }}
-                        className="text-[11px] font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1 ml-auto"
+                        className="text-[11px] font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 ml-auto"
                       >
                         <span>Inspect</span>
                         <ChevronRight className="w-3 h-3" />
@@ -569,45 +569,45 @@ export default function DashboardPage() {
         <div className="p-6 rounded-3xl glass-panel space-y-4 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-charcoal-950 flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-red-600" />
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-red-500" />
                 <span>Recent Live Alerts</span>
               </h3>
-              <Link href="/alerts" className="text-xs text-sky-700 hover:text-sky-900 font-bold">
+              <Link href="/alerts" className="text-xs text-sky-400 hover:text-sky-300 font-bold">
                 View All
               </Link>
             </div>
-            <p className="text-[11px] text-charcoal-600 mt-0.5">Click an alert to view explainability and triage.</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Click an alert to view explainability and triage.</p>
 
             <div className="space-y-3 mt-4">
               {alerts.slice(0, 4).map((a) => (
                 <div
                   key={a.alertId}
                   onClick={() => setSelectedAlert(a)}
-                  className="p-3.5 rounded-2xl bg-white/80 border border-beige-300 shadow-sm space-y-1.5 hover:border-slate-400 transition cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-sm space-y-1.5 hover:border-slate-700 transition cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-full font-bold ${
                         a.severity === 'critical'
-                          ? 'bg-red-100 text-red-700 border border-red-200'
-                          : 'bg-amber-100 text-amber-800 border border-amber-200'
+                          ? 'bg-red-950/80 text-red-400 border border-red-800/50'
+                          : 'bg-amber-950/80 text-amber-400 border border-amber-800/50'
                       }`}
                     >
                       {a.severity}
                     </span>
-                    <span className="text-[9px] font-mono text-charcoal-400">{a.detectorName}</span>
+                    <span className="text-[9px] font-mono text-slate-400">{a.detectorName}</span>
                   </div>
-                  <h4 className="font-bold text-charcoal-950 text-xs line-clamp-1">{a.title}</h4>
-                  <p className="text-[11px] text-charcoal-600 line-clamp-2 leading-relaxed">{a.explanation}</p>
+                  <h4 className="font-bold text-white text-xs line-clamp-1">{a.title}</h4>
+                  <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">{a.explanation}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="pt-3 border-t border-beige-200 flex items-center justify-between text-xs">
-            <span className="text-[11px] text-charcoal-500">10 detectors running</span>
-            <Link href="/alerts" className="font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1">
+          <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+            <span className="text-[11px] text-slate-400">10 detectors running</span>
+            <Link href="/alerts" className="font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1">
               <span>Full Alert Center</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -619,54 +619,54 @@ export default function DashboardPage() {
       {/* QUICK ENTITY DOSSIER MODAL */}
       {/* ========================================================================= */}
       {selectedEntity && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg bg-white rounded-3xl p-6 border border-beige-300 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-lg bg-[#0c1222] rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4 text-white">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-sm font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-slate-800 text-sky-400 border border-slate-700 flex items-center justify-center text-sm font-bold">
                   {selectedEntity.label.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-charcoal-950">{selectedEntity.label}</h3>
-                  <p className="text-xs text-charcoal-500 font-mono">ID: {selectedEntity.entityId} • Type: {selectedEntity.type}</p>
+                  <h3 className="text-base font-bold text-white">{selectedEntity.label}</h3>
+                  <p className="text-xs text-slate-400 font-mono">ID: {selectedEntity.entityId} • Type: {selectedEntity.type}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedEntity(null)}
-                className="p-1.5 rounded-full hover:bg-beige-200 text-charcoal-600 transition"
+                className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-beige-100/70 text-xs">
+            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs">
               <div>
-                <span className="text-[10px] uppercase font-mono text-charcoal-500 font-semibold">Influence Score</span>
-                <p className="text-base font-black text-charcoal-950">{selectedEntity.influenceScore}/100</p>
+                <span className="text-[10px] uppercase font-mono text-slate-400 font-semibold">Influence Score</span>
+                <p className="text-base font-black text-white">{selectedEntity.influenceScore}/100</p>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-mono text-charcoal-500 font-semibold">Risk Classification</span>
-                <p className={`text-xs font-bold mt-1 ${selectedEntity.riskFlag ? 'text-red-700' : 'text-emerald-700'}`}>
+                <span className="text-[10px] uppercase font-mono text-slate-400 font-semibold">Risk Classification</span>
+                <p className={`text-xs font-bold mt-1 ${selectedEntity.riskFlag ? 'text-red-400' : 'text-emerald-400'}`}>
                   {selectedEntity.riskFlag ? 'Flagged High-Risk Target' : 'Normal Standing'}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2 text-xs">
-              <p className="font-semibold text-charcoal-800">Designation / Profile:</p>
-              <p className="text-charcoal-600 bg-white p-2.5 rounded-xl border border-beige-200">
+              <p className="font-semibold text-slate-300">Designation / Profile:</p>
+              <p className="text-slate-300 bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
                 {selectedEntity.properties?.designation || 'Operational entity listed in master syndicate registry.'}
               </p>
             </div>
 
             {selectedEntity.connectedEntities && selectedEntity.connectedEntities.length > 0 && (
               <div className="space-y-2 text-xs">
-                <p className="font-semibold text-charcoal-800">Direct Network Connections ({selectedEntity.connectedEntities.length}):</p>
+                <p className="font-semibold text-slate-300">Direct Network Connections ({selectedEntity.connectedEntities.length}):</p>
                 <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1">
                   {selectedEntity.connectedEntities.map((c) => (
                     <span
                       key={c.entityId}
-                      className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-charcoal-800 text-[11px] font-mono"
+                      className="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-mono"
                     >
                       {c.label} ({c.relationship})
                     </span>
@@ -675,17 +675,17 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <div className="pt-3 border-t border-beige-200 flex items-center justify-between">
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
               <Link
                 href={`/entities?q=${encodeURIComponent(selectedEntity.label)}`}
-                className="px-4 py-2 bg-charcoal-900 text-beige-100 rounded-full text-xs font-bold hover:bg-charcoal-800 transition flex items-center gap-1.5"
+                className="px-4 py-2 bg-sky-600 text-white rounded-full text-xs font-bold hover:bg-sky-500 transition flex items-center gap-1.5"
               >
                 <span>Full Profile in Registry</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <button
                 onClick={() => setSelectedEntity(null)}
-                className="px-4 py-2 rounded-full border border-beige-300 text-charcoal-700 text-xs font-semibold hover:bg-beige-100 transition"
+                className="px-4 py-2 rounded-full border border-slate-700 text-slate-300 text-xs font-semibold hover:bg-slate-800 transition"
               >
                 Close
               </button>
@@ -698,56 +698,56 @@ export default function DashboardPage() {
       {/* QUICK ALERT TRIAGE MODAL */}
       {/* ========================================================================= */}
       {selectedAlert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg bg-white rounded-3xl p-6 border border-beige-300 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-lg bg-[#0c1222] rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4 text-white">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2.5">
                 <div
                   className={`p-2 rounded-2xl ${
-                    selectedAlert.severity === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'
+                    selectedAlert.severity === 'critical' ? 'bg-red-950/80 text-red-400 border border-red-800/50' : 'bg-amber-950/80 text-amber-400 border border-amber-800/50'
                   }`}
                 >
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-charcoal-950">{selectedAlert.title}</h3>
-                  <p className="text-[11px] text-charcoal-500 font-mono">Detector: {selectedAlert.detectorName} • Status: {selectedAlert.status}</p>
+                  <h3 className="text-sm font-bold text-white">{selectedAlert.title}</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">Detector: {selectedAlert.detectorName} • Status: {selectedAlert.status}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedAlert(null)}
-                className="p-1.5 rounded-full hover:bg-beige-200 text-charcoal-600 transition"
+                className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-beige-100/70 space-y-2 text-xs">
-              <span className="text-[10px] uppercase font-mono text-charcoal-500 font-semibold">Detection Methodology & Why Flagged</span>
-              <p className="text-charcoal-700 leading-relaxed">{selectedAlert.explanation}</p>
-              <p className="text-[11px] text-charcoal-500 italic pt-1 border-t border-beige-200">
+            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs">
+              <span className="text-[10px] uppercase font-mono text-slate-400 font-semibold">Detection Methodology & Why Flagged</span>
+              <p className="text-slate-300 leading-relaxed">{selectedAlert.explanation}</p>
+              <p className="text-[11px] text-slate-400 italic pt-1 border-t border-slate-800">
                 Rule engine confidence: {(selectedAlert.confidence * 100).toFixed(0)}%
               </p>
             </div>
 
-            <div className="pt-3 border-t border-beige-200 flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleDismissAlert(selectedAlert.alertId)}
-                  className="px-3.5 py-1.5 rounded-full border border-red-300 text-red-700 text-xs font-semibold hover:bg-red-50 transition"
+                  className="px-3.5 py-1.5 rounded-full border border-red-800 text-red-400 text-xs font-semibold hover:bg-red-950/50 transition"
                 >
                   Dismiss Alert
                 </button>
                 <Link
                   href="/alerts"
-                  className="px-3.5 py-1.5 bg-charcoal-900 text-beige-100 rounded-full text-xs font-bold hover:bg-charcoal-800 transition"
+                  className="px-3.5 py-1.5 bg-sky-600 text-white rounded-full text-xs font-bold hover:bg-sky-500 transition"
                 >
                   Investigate in Alert Center
                 </Link>
               </div>
               <button
                 onClick={() => setSelectedAlert(null)}
-                className="px-3 py-1.5 text-xs text-charcoal-500 hover:text-charcoal-800 transition"
+                className="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition"
               >
                 Close
               </button>

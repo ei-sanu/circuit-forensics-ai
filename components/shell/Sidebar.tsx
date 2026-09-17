@@ -367,14 +367,14 @@ export function Sidebar() {
   if (pathname === '/' || pathname === '/login') return null;
 
   return (
-    <aside className="w-64 bg-[#f8f9fa] dark:bg-[#080c14] border-r border-neutral-200/80 dark:border-slate-800/80 flex flex-col justify-between shrink-0 h-screen sticky top-0 backdrop-blur-2xl text-neutral-800 dark:text-neutral-200 z-30 overflow-y-auto transition-colors duration-200 select-none">
+    <aside className="w-64 bg-[#070b14] border-r border-slate-800/90 flex flex-col justify-between shrink-0 h-screen sticky top-0 backdrop-blur-2xl text-slate-200 z-30 overflow-y-auto transition-colors duration-200 select-none">
       <div>
         {/* Top Header with "< Back" Button and Brand */}
-        <div className="p-4 border-b border-neutral-200/60 dark:border-slate-800/60 space-y-3">
+        <div className="p-4 border-b border-slate-800/80 space-y-3">
           {/* Sleek < Back Pill Button */}
           <button
             onClick={handleBack}
-            className="px-3.5 py-1.5 rounded-full border border-neutral-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-200 text-xs font-semibold shadow-xs hover:bg-neutral-100 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full border border-slate-700/80 bg-slate-900 text-slate-200 text-xs font-semibold shadow-xs hover:bg-slate-800 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             <span>Back</span>
@@ -382,14 +382,14 @@ export function Sidebar() {
 
           {/* Brand Logo & Title */}
           <Link href="/dashboard" className="flex items-center gap-2.5 group pt-1">
-            <div className="w-8 h-8 rounded-xl bg-blue-600 dark:bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 rounded-xl bg-sky-600 flex items-center justify-center text-white font-bold shadow-md shadow-sky-600/30 group-hover:scale-105 transition-transform">
               <ShieldAlert className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-sm text-neutral-900 dark:text-white tracking-tight flex items-center">
-                CIRCUIT<span className="text-blue-600 dark:text-blue-400 font-semibold italic ml-0.5">2.0</span>
+              <h1 className="font-bold text-sm text-white tracking-tight flex items-center">
+                CIRCUIT<span className="text-sky-400 font-semibold italic ml-0.5">2.0</span>
               </h1>
-              <p className="text-[9px] text-neutral-400 dark:text-neutral-500 font-mono tracking-wider uppercase">
+              <p className="text-[9px] text-slate-400 font-mono tracking-wider uppercase">
                 Intelligence Platform
               </p>
             </div>
@@ -407,16 +407,16 @@ export function Sidebar() {
                 {/* Category Accordion Header */}
                 <button
                   onClick={() => toggleGroup(category.id)}
-                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/40 dark:hover:bg-slate-800/40 transition cursor-pointer"
+                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <CatIcon className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
+                    <CatIcon className="w-3.5 h-3.5 text-slate-400" />
                     <span>{category.label}</span>
                   </div>
                   {isExpanded ? (
-                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   ) : (
-                    <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                   )}
                 </button>
 
@@ -439,21 +439,21 @@ export function Sidebar() {
                           onClick={() => handleNavClick(item.href, item.label)}
                           className={`group flex items-center justify-between px-3 py-2 rounded-2xl text-xs transition-all duration-150 relative active:scale-[0.98] ${
                             isActive
-                              ? 'bg-white dark:bg-slate-800 text-neutral-900 dark:text-white shadow-xs border border-neutral-200/90 dark:border-slate-700 font-semibold'
+                              ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30 border border-sky-400/40 font-semibold'
                               : isPending
-                              ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 animate-pulse font-medium'
-                              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/40 dark:hover:bg-slate-800/40 font-medium'
+                              ? 'bg-blue-950/60 text-blue-300 border border-blue-800 animate-pulse font-medium'
+                              : 'text-slate-300 hover:text-white hover:bg-slate-800/70 font-medium'
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
                             {isPending ? (
-                              <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin shrink-0" />
+                              <Loader2 className="w-3.5 h-3.5 text-sky-400 animate-spin shrink-0" />
                             ) : (
                               <Icon
                                 className={`w-3.5 h-3.5 transition-transform duration-150 group-hover:scale-110 shrink-0 ${
                                   isActive
-                                    ? 'text-blue-600 dark:text-blue-400'
-                                    : 'text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-700 dark:group-hover:text-neutral-200'
+                                    ? 'text-white'
+                                    : 'text-slate-400 group-hover:text-white'
                                 }`}
                               />
                             )}
@@ -462,13 +462,13 @@ export function Sidebar() {
 
                           <div className="flex items-center gap-1.5">
                             {isPending && (
-                              <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                              <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
                             )}
                             {item.badge !== undefined && (
                               <span
                                 className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
                                   isActive
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-white text-sky-700 shadow-sm'
                                     : 'bg-red-500 text-white shadow-xs'
                                 }`}
                               >
@@ -488,18 +488,18 @@ export function Sidebar() {
       </div>
 
       {/* User Footer */}
-      <div className="p-3 border-t border-neutral-200/60 dark:border-slate-800/60 bg-neutral-100/60 dark:bg-[#070a11]/80">
+      <div className="p-3 border-t border-slate-800/80 bg-[#05070d]">
         {/* User Card */}
-        <div className="flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-slate-900 border border-neutral-200/80 dark:border-slate-800 shadow-xs">
+        <div className="flex items-center justify-between p-2 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xs">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-[11px] font-bold shadow-xs shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-blue-600 text-white flex items-center justify-center text-[11px] font-bold shadow-xs shrink-0">
               {user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'CO'}
             </div>
             <div className="truncate">
-              <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+              <p className="text-xs font-semibold text-white truncate">
                 {user?.name || 'Command Officer'}
               </p>
-              <p className="text-[9px] text-neutral-400 dark:text-neutral-500 uppercase font-mono">
+              <p className="text-[9px] text-slate-400 uppercase font-mono">
                 {user?.role?.replace('_', ' ') || 'Investigator'}
               </p>
             </div>
@@ -507,7 +507,7 @@ export function Sidebar() {
           <button
             onClick={handleLogout}
             title="Log out"
-            className="p-1.5 rounded-xl text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-800 transition cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
           </button>

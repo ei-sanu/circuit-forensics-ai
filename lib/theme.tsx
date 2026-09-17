@@ -21,15 +21,15 @@ const THEME_STORAGE_KEY = 'circuit_theme';
 const ACCENT_STORAGE_KEY = 'circuit_accent';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
+  const [theme, setThemeState] = useState<ThemeMode>('dark');
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('dark');
   const [accentColor, setAccentColorState] = useState<AccentColor>('blue');
   const [mounted, setMounted] = useState(false);
 
   // Helper to get system preference
   const getSystemTheme = useCallback((): ResolvedTheme => {
-    if (typeof window === 'undefined') return 'light';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (typeof window === 'undefined') return 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'dark';
   }, []);
 
   // Update DOM classes and CSS variables
@@ -59,13 +59,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from storage
   useEffect(() => {
     setMounted(true);
-    const savedTheme = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) || 'system';
+    const savedTheme = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) || 'dark';
     const savedAccent = (localStorage.getItem(ACCENT_STORAGE_KEY) as AccentColor) || 'blue';
 
     setThemeState(savedTheme);
     setAccentColorState(savedAccent);
 
-    const initialResolved: ResolvedTheme = savedTheme === 'system' ? getSystemTheme() : savedTheme;
+    const initialResolved: ResolvedTheme = savedTheme === 'light' ? 'light' : 'dark';
     setResolvedTheme(initialResolved);
     applyThemeToDOM(initialResolved, savedAccent);
   }, [getSystemTheme, applyThemeToDOM]);
